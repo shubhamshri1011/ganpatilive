@@ -1,0 +1,380 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#f45a00">
+<meta name="description" content="Pune Ganpati LIVE 2026 — Pune Ganpati mandals, exact map destinations, community crowd reports, visitor comments and nearby navigation.">
+<meta name="robots" content="index,follow">
+<meta property="og:title" content="Pune Ganpati LIVE 2026">
+<meta property="og:description" content="Find Pune Ganpati mandals, directions, recent community crowd reports and visitor updates.">
+<meta property="og:type" content="website">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="Pune Ganpati LIVE 2026">
+<meta name="twitter:description" content="Pune Ganpati mandals, directions, crowd reports and visitor updates.">
+<title>Pune Ganpati LIVE 2026</title>
+<script type="application/ld+json">
+{"@context":"https://schema.org","@type":"WebSite","name":"Pune Ganpati LIVE 2026","description":"Mobile-first Pune Ganpati directory with mandal locations, directions, community crowd reports and visitor updates.","inLanguage":["en","hi","mr"],"keywords":"Pune Ganpati 2026, Ganpati mandals Pune, Pune Ganeshotsav, Ganpati darshan Pune"}
+</script>
+<link rel="preconnect" href="https://unpkg.com">
+<link rel="preconnect" href="https://www.gstatic.com">
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
+<style>
+:root{--bg:#fff8f1;--card:#fff;--ink:#172033;--muted:#667085;--line:#e7e8ec;--brand:#f45a00;--brand2:#ff9d27;--nav:#fff;--shadow:0 8px 28px rgba(20,30,50,.08);--good:#16844a;--warn:#b77900;--bad:#c43d2f}
+*{box-sizing:border-box}html{scroll-behavior:smooth}body{margin:0;background:var(--bg);color:var(--ink);font-family:system-ui,-apple-system,Segoe UI,Roboto,Arial,sans-serif;padding-bottom:82px}button,input,textarea{font:inherit}button,a{touch-action:manipulation}.top{position:sticky;top:0;z-index:50;background:rgba(255,255,255,.94);backdrop-filter:blur(12px);border-bottom:1px solid var(--line)}.topin{max-width:1100px;margin:auto;padding:12px 16px;display:flex;gap:10px;align-items:center}.logo{font-weight:900;font-size:18px;display:flex;gap:8px;align-items:center}.om{width:34px;height:34px;border-radius:10px;background:#9b4bd4;color:#fff;display:grid;place-items:center}.grow{flex:1}.lang{border:1px solid var(--line);background:#fff;border-radius:12px;padding:9px 10px}.wrap{max-width:1100px;margin:auto;padding:18px 16px}.hero{background:linear-gradient(135deg,#fff,#fff0df);border:1px solid #f0d8bf;border-radius:24px;padding:24px;box-shadow:var(--shadow)}h1{font-size:clamp(30px,7vw,54px);line-height:1.02;margin:0 0 10px}.hero p{color:var(--muted);max-width:720px;font-size:17px}.actions{display:flex;gap:10px;flex-wrap:wrap}.btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;min-height:46px;padding:11px 15px;border-radius:13px;border:1px solid var(--line);background:#fff;color:var(--ink);font-weight:800;text-decoration:none;cursor:pointer}.btn.primary{background:var(--brand);color:#fff;border-color:var(--brand)}.btn.soft{background:#fff3e8;color:#a83d00;border-color:#ffd5b3}.btn.danger{color:#b42318}.section{margin-top:22px;scroll-margin-top:90px}.detail{scroll-margin-top:90px}.sectionhead{display:flex;align-items:end;justify-content:space-between;gap:12px;margin-bottom:12px}.section h2{margin:0;font-size:24px}.muted{color:var(--muted)}.search{width:100%;min-height:48px;border:1px solid var(--line);border-radius:14px;padding:0 15px;background:#fff}.filters{display:flex;gap:8px;overflow:auto;padding:4px 0 2px}.chip{white-space:nowrap;border:1px solid var(--line);background:#fff;border-radius:999px;padding:9px 13px;font-weight:700}.chip.active{background:#172033;color:#fff}.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(270px,1fr));gap:14px}.card{background:var(--card);border:1px solid var(--line);border-radius:18px;padding:16px;box-shadow:var(--shadow)}.rank{display:inline-flex;background:#fff1dd;color:#9a4b00;border-radius:999px;padding:5px 9px;font-size:12px;font-weight:900}.card h3{margin:10px 0 4px;font-size:19px}.meta{font-size:13px;color:var(--muted);line-height:1.5}.status{display:inline-flex;margin:10px 0 12px;border-radius:999px;padding:6px 9px;font-size:12px;font-weight:900;background:#f1f3f5;color:#5c6470}.status.live{background:#e9f8ef;color:#177245}.status.busy{background:#fff1dc;color:#9a5a00}.status.vbusy{background:#ffe7df;color:#a23824}.cardactions{display:grid;grid-template-columns:1fr 1fr;gap:8px}.map{height:360px;border-radius:18px;overflow:hidden;border:1px solid var(--line);box-shadow:var(--shadow)}.detail{display:none}.detail.show{display:block}.back{margin-bottom:12px}.detailhero{background:#fff;border:1px solid var(--line);border-radius:20px;padding:18px}.info-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(190px,1fr));gap:10px;margin-top:14px}.info{background:#f8fafc;border:1px solid var(--line);border-radius:14px;padding:12px}.info b{display:block;margin-bottom:3px}.commentbox{margin-top:14px;background:#fff;border:1px solid var(--line);border-radius:18px;padding:16px}.field{width:100%;border:1px solid #ccd3dd;border-radius:13px;padding:12px;margin:6px 0 12px;background:#fff}.comments{display:grid;gap:10px;margin-top:14px}.comment{border:1px solid var(--line);border-radius:14px;padding:13px;background:#fff}.comment .who{font-weight:900}.comment .when{font-size:12px;color:var(--muted)}.empty{padding:18px;text-align:center;color:var(--muted);background:#fafafa;border-radius:14px}.crowd{display:grid;grid-template-columns:repeat(2,1fr);gap:8px}.crowd button{min-height:50px}.small{font-size:12px}.notice{padding:12px 14px;border-radius:13px;background:#eef6ff;color:#24486a;margin:10px 0}.error{background:#fff0f0;color:#a02d2d}.success{background:#edf9f1;color:#1c7042}.bottom{position:fixed;bottom:0;left:0;right:0;height:72px;background:rgba(255,255,255,.97);backdrop-filter:blur(10px);border-top:1px solid var(--line);z-index:100;display:flex;justify-content:center}.bottomin{max-width:700px;width:100%;display:grid;grid-template-columns:repeat(4,1fr)}.navbtn{border:0;background:transparent;font-weight:800;color:#586174;font-size:12px}.navbtn span{display:block;font-size:23px;margin-bottom:2px}.navbtn.active{color:var(--brand)}footer{margin-top:30px;background:#10182b;color:#d7ddea;padding:28px 16px}.footin{max-width:1100px;margin:auto}.source{font-size:12px;color:#8993a7}.leaflet-popup-content-wrapper{border-radius:14px}.leaflet-popup-content{margin:12px}.popup h4{margin:0 0 6px}.popup a{color:#b33e00;font-weight:800}.hidden{display:none!important}@media(min-width:800px){.map{height:460px}.bottom{position:static;height:auto;background:transparent;border:0;margin-top:20px}.bottomin{max-width:1100px;background:#fff;border:1px solid var(--line);border-radius:18px;box-shadow:var(--shadow)}body{padding-bottom:0}.navbtn{min-height:54px}.hero{padding:34px}}
+</style>
+</head>
+<body>
+<header class="top"><div class="topin">
+  <div class="logo"><div class="om">ॐ</div><span>Pune Ganpati LIVE 2026</span></div>
+  <div class="grow"></div>
+  <button class="lang" id="langBtn" aria-label="Change language">EN</button>
+</div></header>
+
+<main class="wrap">
+<section id="homeView">
+  <div class="hero">
+    <div class="rank">🪔 Pune Ganeshotsav 2026</div>
+    <h1>Find your Ganpati.<br>Darshan with confidence.</h1>
+    <p>22 important Pune Ganpati mandals, exact map destinations, nearby navigation, community crowd reports and visitor comments — in one mobile-first guide.</p>
+    <div class="actions">
+      <button class="btn primary" id="nearBtn">📍 Find Near Me</button><button class="btn soft" id="shareBtn">↗️ Share Pune Ganpati LIVE</button>
+      <a class="btn" href="#mapSection">🗺️ Live Map</a>
+    </div>
+    <div id="locationNotice" class="notice hidden"></div>
+  </div>
+
+  <section class="section">
+    <div class="sectionhead"><h2>Ganpati Mandals</h2><span class="muted" id="countText"></span></div>
+    <input id="search" class="search" placeholder="Search Ganpati or area…">
+    <div class="filters">
+      <button class="chip active" data-filter="all">All</button>
+      <button class="chip" data-filter="manache">Manache Paach</button>
+      <button class="chip" data-filter="major">Major</button>
+      <button class="chip" data-filter="near">Nearest to me</button>
+    </div>
+    <div id="cards" class="grid" style="margin-top:12px"></div>
+  </section>
+
+  <section class="section" id="mapSection">
+    <div class="sectionhead"><h2>Live Map</h2><span class="muted small">Community crowd data only · 30 min freshness</span></div>
+    <div id="map" class="map"></div>
+     <div class="small muted" style="margin-top:8px">Marker numbers match the Manache/mandal order. Marker colour changes only when a recent community crowd report exists.</div>
+  </section>
+</section>
+
+<section id="detailView" class="detail">
+  <button class="btn back" id="backBtn">← Back to Ganpatis</button>
+  <div id="detailContent"></div>
+</section>
+</main>
+
+<nav class="bottom"><div class="bottomin">
+  <button class="navbtn active" data-nav="home"><span>⌂</span>Home</button>
+  <button class="navbtn" data-nav="map"><span>⌖</span>Live Map</button>
+  <button class="navbtn" id="nearNav"><span>➤</span>Near Me</button>
+  <button class="navbtn" data-nav="ganpatis"><span>▦</span>Ganpatis</button>
+</div></nav>
+
+<footer><div class="footin">
+  <div class="logo"><div class="om">ॐ</div><span>Pune Ganpati LIVE 2026</span></div>
+  <p>A community-focused guide for visiting Pune during Ganeshotsav 2026.</p><button class="btn soft" id="footerShare" style="margin-top:8px">↗️ Share with friends</button>
+  <div class="source">Mandal names, addresses, coordinates, timings and transport references in this build come from the supplied Gemini source file. Recheck each destination against the mandal or official festival information before public promotion. Crowd information is never fabricated: it appears only from recent visitor reports stored in Firestore.</div>
+</div></footer>
+
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/12.1.0/firebase-app.js";
+import { getFirestore, collection, addDoc, onSnapshot, query, where, serverTimestamp, limit } from "https://www.gstatic.com/firebasejs/12.1.0/firebase-firestore.js";
+
+const firebaseConfig = {
+  apiKey: "AIzaSyAXbMPHQDSN-KKoS2OUEegwuapwzXwM-Ek",
+  authDomain: "puneganpatilive.firebaseapp.com",
+  projectId: "puneganpatilive",
+  storageBucket: "puneganpatilive.firebasestorage.app",
+  messagingSenderId: "848829850195",
+  appId: "1:848829850195:web:c3b14375d19c5689cd9ca6",
+  measurementId: "G-ZTVFTK80TM"
+};
+const app=initializeApp(firebaseConfig);
+const db=getFirestore(app);
+window.__PGL_FIREBASE__={app,db};
+
+const M=[
+{id:"kasba",name:"Kasba Ganpati",rank:1,group:"manache",address:"159, Kasba Peth Rd, Pune 411011",lat:18.51889,lng:73.85694,metro:"Mahatma Phule Mandai",bus:"Phadke Haud / Appa Balwant Chowk",timings:"06:00 AM – 10:30 PM",source:"Kasba Ganpati Public Trust",verified:"2026-09-01",rating:4.9},
+{id:"tambdi",name:"Tambdi Jogeshwari",rank:2,group:"manache",address:"33A, Budhwar Peth Rd, Pune 411002",lat:18.51730,lng:73.85620,metro:"Budhwar Peth / Mandai",bus:"Appa Balwant Chowk",timings:"07:30 AM – 10:00 PM",source:"Shree Tambdi Jogeshwari Trust",verified:"2026-09-01",rating:4.8},
+{id:"guruji",name:"Guruji Talim",rank:3,group:"manache",address:"Ganpati Chowk, Laxmi Road, Pune 411002",lat:18.51690,lng:73.85510,metro:"Mandai Metro",bus:"Laxmi Road Stop",timings:"06:00 AM – 11:00 PM",source:"Guruji Talim Mandal Trust",verified:"2026-09-01",rating:4.8},
+{id:"tulshibaug",name:"Tulshibaug Ganpati",rank:4,group:"manache",address:"82, Budhwar Peth Rd, Pune 411002",lat:18.51580,lng:73.85590,metro:"Mandai Metro",bus:"Tulshibaug / Shanipar",timings:"06:00 AM – 11:00 PM",source:"Tulshibaug Ganpati Trust",verified:"2026-09-02",rating:4.9},
+{id:"kesariwada",name:"Kesariwada Ganpati",rank:5,group:"manache",address:"Kesari Wada, Narayan Peth, Pune 411030",lat:18.51980,lng:73.85190,metro:"PMC Metro",bus:"Narayan Peth / NC Kelkar",timings:"08:00 AM – 10:00 PM",source:"Kesari Mahratta Trust",verified:"2026-09-02",rating:4.9},
+{id:"dagdusheth",name:"Dagdusheth Ganpati",group:"major",address:"Ganpati Bhavan, Budhwar Peth, Pune 411002",lat:18.51639,lng:73.85611,metro:"Mandai Metro",bus:"Dagdusheth Halwai Stop",timings:"06:00 AM – 11:00 PM",source:"Shrimant Dagdusheth Trust",verified:"2026-09-05",rating:5.0},
+{id:"bhausaheb",name:"Bhausaheb Rangari",group:"major",address:"Bhausaheb Rangari Bhavan, Pune 411002",lat:18.51763,lng:73.85538,metro:"Budhwar Peth / PMC",bus:"Shaniwar Wada Stop",timings:"06:00 AM – 11:00 PM",source:"Shrimant Bhausaheb Trust",verified:"2026-09-03",rating:4.9},
+{id:"mandai",name:"Akhil Mandai Ganpati",group:"major",address:"Mahatma Phule Mandai Chowk, Pune 411002",lat:18.51350,lng:73.85560,metro:"Mahatma Phule Mandai",bus:"Mandai Chowk Stop",timings:"07:00 AM – 11:30 PM",source:"Akhil Mandai Trust",verified:"2026-09-04",rating:4.8},
+{id:"babu-genu",name:"Hutatma Babu Genu",group:"major",address:"Babu Genu Chowk, Laxmi Road, Pune 411002",lat:18.51520,lng:73.85480,metro:"Mandai Metro",bus:"Laxmi Road Stop",timings:"06:00 AM – 12:00 AM",source:"Hutatma Babu Genu Trust",verified:"2026-09-04",rating:4.9},
+{id:"natu",name:"Natu Baug Ganpati",group:"other",address:"Natu Baug Chowk, Sadashiv Peth, Pune 411030",lat:18.51210,lng:73.85320,metro:"Mandai Metro",bus:"Bajirao Road Stop",timings:"08:00 AM – 10:30 PM",source:"Natu Baug Sarvajanik Mandal",verified:"2026-09-02",rating:4.7},
+{id:"hathi",name:"Hathi Ganpati Mandal",group:"other",address:"Hathi Ganpati Chowk, Sadashiv Peth, Pune 411030",lat:18.51390,lng:73.84850,metro:"Deccan Gymkhana",bus:"SP College / Tilak Road",timings:"08:00 AM – 10:00 PM",source:"Hathi Ganpati Trust",verified:"2026-09-03",rating:4.7},
+{id:"chimnya",name:"Chimnya Ganpati",group:"other",address:"Sadashiv Peth, Near Perugate, Pune 411030",lat:18.51280,lng:73.84690,metro:"Deccan Gymkhana",bus:"Perugate / SP College",timings:"08:30 AM – 10:00 PM",source:"Chimnya Ganpati Trust",verified:"2026-09-01",rating:4.6},
+{id:"nimbalkar",name:"Nimbalkar Talim",group:"other",address:"Nimbalkar Talim Chowk, Sadashiv Peth, Pune 411030",lat:18.51420,lng:73.85120,metro:"Mandai Metro",bus:"Bajirao Road Stop",timings:"08:00 AM – 10:30 PM",source:"Nimbalkar Talim Trust",verified:"2026-09-02",rating:4.6},
+{id:"nagarkar",name:"Nagarkar Talim",group:"other",address:"Nagarkar Talim Chowk, Budhwar Peth, Pune 411002",lat:18.51510,lng:73.85230,metro:"Mandai Metro",bus:"Appa Balwant Chowk",timings:"08:00 AM – 10:30 PM",source:"Nagarkar Talim Mandal",verified:"2026-09-02",rating:4.7},
+{id:"jilbya",name:"Jilbya Maruti Ganpati",group:"other",address:"Jilbya Maruti Lane, Laxmi Road, Pune 411002",lat:18.51710,lng:73.85410,metro:"Budhwar Peth / Mandai",bus:"Laxmi Road Stop",timings:"07:30 AM – 11:00 PM",source:"Jilbya Maruti Trust",verified:"2026-09-03",rating:4.8},
+{id:"garud",name:"Garud Ganpati",group:"other",address:"Garud Ganpati Chowk, Laxmi Road, Pune 411030",lat:18.51650,lng:73.85300,metro:"Mandai Metro",bus:"Laxmi Road Stop",timings:"08:00 AM – 10:30 PM",source:"Garud Ganpati Trust",verified:"2026-09-03",rating:4.7},
+{id:"mati",name:"Mati Ganpati",group:"other",address:"Mati Ganpati Chowk, Narayan Peth, Pune 411030",lat:18.51820,lng:73.84910,metro:"PMC Metro",bus:"NC Kelkar Road Stop",timings:"08:00 AM – 10:00 PM",source:"Mati Ganpati Trust",verified:"2026-09-01",rating:4.8},
+{id:"hirabaug",name:"Hirabaug Ganpati",group:"other",address:"Hirabaug Chowk, Tilak Road, Pune 411002",lat:18.50650,lng:73.85290,metro:"Swargate Metro",bus:"Swargate Bus Depot",timings:"07:00 AM – 11:00 PM",source:"Hirabaug Sarvajanik Trust",verified:"2026-09-04",rating:4.7},
+{id:"shanipar",name:"Shanipar Ganpati",group:"other",address:"Shanipar Chowk, Sadashiv Peth, Pune 411030",lat:18.51460,lng:73.85090,metro:"Mandai Metro",bus:"Shanipar Bus Stop",timings:"08:00 AM – 11:00 PM",source:"Shanipar Mandal Trust",verified:"2026-09-03",rating:4.8},
+{id:"khadakmal",name:"Khadakmal Ali",group:"other",address:"Khadakmal Ali Chowk, Ghorpade Peth, Pune 411042",lat:18.50820,lng:73.86100,metro:"Swargate Metro",bus:"Seven Loves Chowk Stop",timings:"08:30 AM – 10:00 PM",source:"Khadakmal Ali Trust",verified:"2026-09-02",rating:4.6},
+{id:"akra",name:"Akra Maruti",group:"other",address:"Akra Maruti Lane, Shukrawar Peth, Pune 411002",lat:18.51150,lng:73.85500,metro:"Mandai Metro",bus:"Subhash Nagar / Bajirao Road",timings:"08:00 AM – 10:00 PM",source:"Akra Maruti Trust",verified:"2026-09-02",rating:4.6},
+{id:"sanyukta",name:"Sanyukta Prasad",group:"other",address:"Opp. Jogeshwari Temple, Budhwar Peth, Pune 411002",lat:18.51780,lng:73.85380,metro:"Budhwar Peth Metro",bus:"Appa Balwant Chowk Stop",timings:"07:30 AM – 11:30 PM",source:"Sanyukta Prasad Trust",verified:"2026-09-04",rating:4.8}
+];
+
+let userPos=null, activeFilter="all", currentMandal=null, commentsUnsub=null;
+const crowdMap=new Map(), commentMap=new Map();
+
+const $=id=>document.getElementById(id);
+function esc(s){return String(s??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#039;"}[c]))}
+function words(s){return String(s).trim().split(/\s+/).filter(Boolean).length}
+function distKm(a,b,c,d){const R=6371, p=Math.PI/180, x=(c-a)*p, y=(d-b)*p; const h=Math.sin(x/2)**2+Math.cos(a*p)*Math.cos(c*p)*Math.sin(y/2)**2; return 2*R*Math.asin(Math.sqrt(h))}
+function mapsUrl(m,walk=false){let u=`https://www.google.com/maps/dir/?api=1&destination=${m.lat},${m.lng}`; if(walk)u+=`&travelmode=walking`; if(userPos)u+=`&origin=${userPos.lat},${userPos.lng}`; return u}
+function mapsSearch(q){return `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(q+", Pune")}`}
+function fmtTime(ts){if(!ts)return "Just now";const d=ts.toDate?ts.toDate():new Date(ts);return isNaN(d)?"Recently":d.toLocaleString("en-IN",{day:"numeric",month:"short",hour:"numeric",minute:"2-digit"})}
+function recentCrowd(m){const arr=(crowdMap.get(m.id)||[]).filter(x=>Date.now()-x.ms<30*60*1000); if(!arr.length)return null; const order={comfortable:1,moderate:2,busy:3,"very-busy":4,"extremely-busy":5}; arr.sort((a,b)=>b.ms-a.ms); return arr[0]}
+function crowdLabel(v){return ({comfortable:"Comfortable",moderate:"Moderate",busy:"Busy","very-busy":"Very Busy","extremely-busy":"Extremely Busy"}[v]||"Reported")}
+function crowdClass(v){return v==="very-busy"||v==="extremely-busy"?"vbusy":v==="busy"?"busy":"live"}
+function markerIcon(v,label){
+  const c={comfortable:"#16844a",moderate:"#b77900",busy:"#e87500","very-busy":"#c43d2f","extremely-busy":"#9e2d2d"}[v]||"#5f6878";
+  const text=label||"";
+  return L.divIcon({
+    className:"",
+    html:`<div title="${esc(text)}" style="width:22px;height:22px;border-radius:50%;background:${c};color:#fff;border:2px solid #fff;box-shadow:0 2px 7px #0006;display:grid;place-items:center;font:800 10px/1 system-ui">${esc(text)}</div>`,
+    iconSize:[22,22],
+    iconAnchor:[11,11]
+  });
+}
+
+function card(m){
+ const live=recentCrowd(m), d=userPos?distKm(userPos.lat,userPos.lng,m.lat,m.lng):null;
+ return `<article class="card">
+  ${m.rank?`<span class="rank">Manache #${m.rank}</span>`:""}
+  <h3>${esc(m.name)}</h3>
+  <div class="meta">${esc(m.address)}</div>
+  <div class="status ${live?crowdClass(live.crowdLevel):""}">${live?`🟠 ${esc(crowdLabel(live.crowdLevel))} · Community reported`:"⚪ No recent crowd report"}</div>
+  <div class="meta">${d!==null?`${d.toFixed(2)} km straight-line from you · walking time estimate`: "Use Near Me to see your approximate distance"}</div>
+  <div class="cardactions">
+    <a class="btn primary" href="${mapsUrl(m)}" target="_blank" rel="noopener noreferrer">🧭 Directions</a>
+    <button class="btn" data-open="${m.id}">View details</button>
+  </div>
+ </article>`;
+}
+function filtered(){
+ let arr=[...M], q=$("search").value.toLowerCase().trim();
+ if(q)arr=arr.filter(m=>(m.name+" "+m.address).toLowerCase().includes(q));
+ if(activeFilter==="manache")arr=arr.filter(m=>m.group==="manache");
+ if(activeFilter==="major")arr=arr.filter(m=>m.group==="major");
+ if(activeFilter==="near"&&userPos)arr.sort((a,b)=>distKm(userPos.lat,userPos.lng,a.lat,a.lng)-distKm(userPos.lat,userPos.lng,b.lat,b.lng));
+ return arr;
+}
+function renderCards(){const arr=filtered();$("countText").textContent=`${arr.length} shown`;$("cards").innerHTML=arr.map(card).join("")||`<div class="empty">No mandal found.</div>`;document.querySelectorAll("[data-open]").forEach(b=>b.onclick=()=>openDetail(b.dataset.open))}
+$("search").oninput=renderCards;
+document.querySelectorAll(".chip").forEach(b=>b.onclick=()=>{document.querySelectorAll(".chip").forEach(x=>x.classList.remove("active"));b.classList.add("active");activeFilter=b.dataset.filter;renderCards()});
+
+function getLocation(){
+ $("locationNotice").classList.remove("hidden");$("locationNotice").textContent="Requesting your current location…";
+ if(!navigator.geolocation){$("locationNotice").textContent="Location is not supported on this browser.";return}
+ navigator.geolocation.getCurrentPosition(p=>{userPos={lat:p.coords.latitude,lng:p.coords.longitude};$("locationNotice").className="notice success";$("locationNotice").textContent="Location used only in this browser to sort nearby mandals and improve Maps directions. It is not stored in Firestore.";renderCards();if(map){map.setView([userPos.lat,userPos.lng],13);if(userMarker)userMarker.setLatLng([userPos.lat,userPos.lng]);else userMarker=L.marker([userPos.lat,userPos.lng]).addTo(map).bindPopup("Your current location");}},e=>{const msg=e.code===1?"Location permission was denied. You can still use the full directory and Maps directions.":e.code===2?"Your location is currently unavailable.":e.code===3?"Location request timed out.":"Could not get your location."; $("locationNotice").className="notice error";$("locationNotice").textContent=msg},{enableHighAccuracy:true,timeout:10000,maximumAge:60000});
+}
+$("nearBtn").onclick=getLocation;$("nearNav").onclick=getLocation;$("shareBtn").onclick=sharePage;$("footerShare").onclick=sharePage;
+
+let map,userMarker,markers=[];
+function initMap(){map=L.map("map",{zoomControl:true}).setView([18.5165,73.8548],13);L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png",{maxZoom:19,attribution:"© OpenStreetMap contributors"}).addTo(map);M.forEach(m=>{const mk=L.marker([m.lat,m.lng],{icon:markerIcon(recentCrowd(m)?.crowdLevel,m.rank||"•")}).addTo(map);mk.bindPopup(`<div class="popup"><h4>${esc(m.name)}</h4><div>${esc(m.address)}</div><p><a href="${mapsUrl(m)}" target="_blank" rel="noopener noreferrer">Get Directions →</a></p><button onclick="window.__openMandal('${m.id}')">View details</button></div>`);markers.push({m,mk})});}
+window.__openMandal=id=>openDetail(id);
+
+function listenCrowd(){
+ onSnapshot(query(collection(db,"crowdReports"),limit(300)),snap=>{
+   crowdMap.clear();snap.forEach(d=>{const x=d.data(); if(!x.mandalId)return; const ct=x.createdAt?.toDate?.()||new Date(0); if(Date.now()-ct.getTime()>30*60*1000)return; const a=crowdMap.get(x.mandalId)||[];a.push({...x,ms:ct.getTime(),id:d.id});crowdMap.set(x.mandalId,a)});
+   renderCards();updateMarkers(); if(currentMandal)renderDetail(currentMandal);
+ },err=>console.error("Crowd reports listener:",err));
+}
+function updateMarkers(){markers.forEach(({m,mk})=>mk.setIcon(markerIcon(recentCrowd(m)?.crowdLevel,m.rank||"•")))}
+
+function subscribeComments(m){
+ if(commentsUnsub)commentsUnsub();
+ const q=query(collection(db,"comments"),where("mandalId","==",m.id),limit(100));
+ commentsUnsub=onSnapshot(q,snap=>{
+   const arr=[];
+   snap.forEach(d=>arr.push({id:d.id,...d.data()}));
+   arr.sort((a,b)=>{
+     const aa=a.createdAt?.toMillis?.()||0,bb=b.createdAt?.toMillis?.()||0;
+     return bb-aa;
+   });
+   commentMap.set(m.id,arr);
+   renderDetail(m,false);
+ },err=>{
+   console.error("Comments listener:",err);
+   const el=$("commentsList");
+   if(el)el.innerHTML=`<div class="empty error">Comments are temporarily unavailable. Firebase says: ${esc(err.code||"unknown-error")}</div>`;
+ });
+}
+async function submitComment(m){
+ const name=$("displayName").value.trim().slice(0,60)||"Pilgrim Visitor", text=$("commentText").value.trim();
+ const msg=$("commentMsg");
+ if(!text){if(msg){msg.className="notice error";msg.textContent="Please write a comment first.";}return;}
+ if(words(text)>200){if(msg){msg.className="notice error";msg.textContent="Please keep your comment within 200 words.";}return;}
+ const last=Number(localStorage.getItem("pgl_comment_last")||0);
+ if(Date.now()-last<30000){if(msg){msg.className="notice error";msg.textContent="Please wait 30 seconds before posting another comment.";}return;}
+ const btn=$("commentSubmit");btn.disabled=true;btn.textContent="Posting…";
+ if(msg){msg.className="notice";msg.textContent="Posting your comment…";}
+ try{
+   await addDoc(collection(db,"comments"),{mandalId:m.id,mandalName:m.name,text,displayName:name,createdAt:serverTimestamp(),language:document.documentElement.lang||"en",status:"approved"});
+   localStorage.setItem("pgl_comment_last",String(Date.now()));
+   $("commentText").value="";
+   $("wordCount").textContent="0 / 200 words";
+   if(msg){msg.className="notice success";msg.textContent="Comment posted successfully. It will appear here automatically.";}
+ } catch(e){
+   console.error("COMMENT FIRESTORE ERROR:",e);
+   if(msg){
+     msg.className="notice error";
+     msg.textContent=e?.code==="permission-denied"
+       ?"Comment blocked by Firestore Security Rules. Enable public comment creation with validation in Firebase Console."
+       :"Could not post the comment. Please check your connection and Firestore setup.";
+   }
+ } finally{btn.disabled=false;btn.textContent="💬 Leave a Comment"}
+}
+async function submitCrowd(m,level,queue){
+ const last=Number(localStorage.getItem("pgl_crowd_"+m.id)||0);if(Date.now()-last<60000)return alert("Please wait before sending another crowd report for this mandal.");
+ try{await addDoc(collection(db,"crowdReports"),{mandalId:m.id,mandalName:m.name,crowdLevel:level,queueTime:queue,createdAt:serverTimestamp()});localStorage.setItem("pgl_crowd_"+m.id,String(Date.now()));alert("Crowd report submitted. Thank you.");}
+ catch(e){console.error(e);const el=$("crowdMsg");if(el){el.className="notice error";el.textContent="Could not submit the crowd report. Check your internet connection and Firestore rules.";}}
+}
+function renderDetail(m,subscribe=true){
+ const arr=commentMap.get(m.id)||[], live=recentCrowd(m);
+ const comments=arr.length?arr.map(c=>`<div class="comment"><div class="who">${esc(c.displayName||"Pilgrim Visitor")}</div><div class="when">${esc(fmtTime(c.createdAt))}</div><div style="margin-top:7px;white-space:pre-wrap">${esc(c.text)}</div></div>`).join(""):`<div class="empty">No comments yet. Be the first visitor to share an update.</div>`;
+ $("detailContent").innerHTML=`<div class="detailhero">
+   <span class="rank">${m.rank?`Manache #${m.rank}`:"Pune Ganpati Mandal"}</span>
+   <h2 style="font-size:30px;margin:10px 0 4px">${esc(m.name)}</h2>
+   <div class="muted">${esc(m.address)}</div>
+   <div class="actions" style="margin-top:14px">
+     <a class="btn primary" href="${mapsUrl(m)}" target="_blank" rel="noopener noreferrer">🧭 Get Directions</a>
+     <a class="btn" href="${mapsUrl(m,true)}" target="_blank" rel="noopener noreferrer">🚶 Walk Here</a>
+     <a class="btn" href="${mapsSearch("parking near "+m.name)}" target="_blank" rel="noopener noreferrer">🅿️ Parking</a>
+     <a class="btn" href="${mapsSearch("public toilets near "+m.name)}" target="_blank" rel="noopener noreferrer">🚻 Toilets</a><button class="btn" id="shareMandalBtn">↗️ Share</button><a class="btn" id="waMandalBtn" target="_blank" rel="noopener noreferrer">🟢 WhatsApp</a>
+   </div>
+   <div class="info-grid">
+    <div class="info"><b>Community crowd</b>${live?`<span class="status ${crowdClass(live.crowdLevel)}">${esc(crowdLabel(live.crowdLevel))}</span><div class="small muted">Reported ${esc(fmtTime(live.createdAt))}</div>`:"<span class='muted'>No recent report</span>"}</div>
+    <div class="info"><b>Darshan timings</b>${esc(m.timings)}</div>
+    <div class="info"><b>Nearest metro</b>${esc(m.metro)}</div>
+    <div class="info"><b>Nearest bus</b>${esc(m.bus)}</div>
+    <div class="info"><b>Rating</b>⭐ ${m.rating.toFixed(1)} <span class="muted">seed/reference rating</span></div>
+    <div class="info"><b>Last verified</b>${esc(m.verified)}<div class="small muted">${esc(m.source)}</div></div>
+   </div>
+ </div>
+ <div class="section card">
+  <div class="sectionhead"><h2>How crowded?</h2><span class="small muted">Reports expire after 30 min</span></div>
+  <div class="crowd">
+   <button class="btn" data-crowd="comfortable">🟢 Comfortable</button>
+   <button class="btn" data-crowd="moderate">🟡 Moderate</button>
+   <button class="btn" data-crowd="busy">🟠 Busy</button>
+   <button class="btn" data-crowd="very-busy">🔴 Very Busy</button>
+   <button class="btn" data-crowd="extremely-busy">🚨 Extremely Busy</button>
+  </div>
+  <div style="margin-top:10px">
+   <select id="queueSelect" class="field"><option value="<10">Queue: under 10 min</option><option value="10–30">Queue: 10–30 min</option><option value="30–60">Queue: 30–60 min</option><option value="60+">Queue: 60+ min</option></select>
+  </div>
+  <div id="crowdMsg" class="small muted">Community reported data only. Exact footfall is not guessed.</div>
+ </div>
+ <div class="commentbox section">
+  <div class="sectionhead"><h2>Visitor Comments</h2><span class="muted">${arr.length} comment${arr.length===1?"":"s"}</span></div>
+  <label>Your Display Name (optional)<input id="displayName" class="field" maxlength="60" placeholder="Pilgrim Visitor"></label>
+  <label>Comment / Darshan Review (max 200 words)<textarea id="commentText" class="field" rows="5" maxlength="5000" placeholder="Share queue waiting time, crowd conditions, or helpful tips…"></textarea></label>
+  <div id="wordCount" class="small muted">0 / 200 words</div>
+  <div class="small muted">Anonymous comments are stored in Firestore. No registration required.</div>
+  <button id="commentSubmit" class="btn primary" style="margin-top:10px;width:100%">💬 Leave a Comment</button>
+  <div id="commentMsg" class="small" style="margin-top:8px"></div>
+  <div id="commentsList" class="comments">${comments}</div>
+ </div>`;
+ document.querySelectorAll("[data-crowd]").forEach(b=>b.onclick=()=>submitCrowd(m,b.dataset.crowd,$("queueSelect").value));
+ $("shareMandalBtn").onclick=()=>shareMandal(m);
+ $("waMandalBtn").href="https://wa.me/?text="+encodeURIComponent(m.name+" — Pune Ganpati LIVE 2026\n"+location.href.split("#")[0]+"#mandal="+encodeURIComponent(m.id));
+ $("commentText").oninput=()=>{
+   const n=words($("commentText").value);
+   $("wordCount").textContent=`${n} / 200 words`;
+   $("wordCount").style.fontWeight=n>200?"800":"400";
+ };
+ $("commentSubmit").onclick=()=>submitComment(m);
+ if(subscribe) subscribeComments(m);
+}
+async function sharePage(){
+ const data={title:"Pune Ganpati LIVE 2026",text:"Find Pune Ganpati mandals, directions and community crowd updates.",url:location.href};
+ try{
+   if(navigator.share){await navigator.share(data);}
+   else{await navigator.clipboard.writeText(location.href);alert("Link copied. Share it on WhatsApp or Instagram.");}
+ }catch(e){if(e?.name!=="AbortError")console.warn("Share:",e);}
+}
+async function shareMandal(m){
+ const url=location.href.split("#")[0]+"#mandal="+encodeURIComponent(m.id);
+ const data={title:m.name+" — Pune Ganpati LIVE 2026",text:"Check this Ganpati mandal on Pune Ganpati LIVE 2026.",url};
+ try{
+   if(navigator.share){await navigator.share(data);}
+   else{await navigator.clipboard.writeText(url);const msg=$("shareMsg");if(msg){msg.className="notice success";msg.textContent="Mandal link copied. Share it on WhatsApp or Instagram.";} }
+ }catch(e){if(e?.name!=="AbortError")console.warn("Share mandal:",e);}
+}
+function openDetail(id){
+ const m=M.find(x=>x.id===id);if(!m)return;
+ currentMandal=m;
+ $("homeView").style.display="none";
+ $("detailView").classList.add("show");
+ renderDetail(m);
+ requestAnimationFrame(()=>{
+   const offset=90;
+   const y=$("detailView").getBoundingClientRect().top+window.scrollY-offset;
+   window.scrollTo({top:Math.max(0,y),behavior:"smooth"});
+ });
+ document.querySelectorAll(".navbtn").forEach(x=>x.classList.remove("active"));
+}
+$("backBtn").onclick=()=>{
+  if(commentsUnsub){commentsUnsub();commentsUnsub=null;}
+  currentMandal=null;
+  $("detailView").classList.remove("show");
+  $("homeView").style.display="block";
+  renderCards();
+  window.scrollTo({top:0,behavior:"smooth"});
+  document.querySelectorAll(".navbtn")[0].classList.add("active");
+};
+
+function scrollToEl(el){
+  const y=el.getBoundingClientRect().top+window.scrollY-78;
+  window.scrollTo({top:Math.max(0,y),behavior:"smooth"});
+}
+document.querySelectorAll(".navbtn[data-nav]").forEach(b=>b.onclick=()=>{
+  if(b.dataset.nav==="map"){scrollToEl($("mapSection"));setTimeout(()=>map.invalidateSize(),450)}
+  else if(b.dataset.nav==="ganpatis"){scrollToEl($("cards"))}
+  else{window.scrollTo({top:0,behavior:"smooth"})}
+});
+
+const translations={
+  en:{near:"📍 Find Near Me",map:"🗺️ Live Map",ganpatis:"Ganpatis",home:"Home",liveMap:"Live Map",search:"Search Ganpati or area…",all:"All",manache:"Manache Paach",major:"Major",nearFilter:"Nearest to me",heading:"Find your Ganpati.<br>Darshan with confidence.",intro:"Important Pune Ganpati mandals, map destinations, nearby navigation, community crowd reports and visitor comments — in one mobile-first guide.",title:"Ganpati Mandals"},
+  hi:{near:"📍 मेरे पास गणपति",map:"🗺️ लाइव मैप",ganpatis:"गणपति",home:"होम",liveMap:"लाइव मैप",search:"गणपति या क्षेत्र खोजें…",all:"सभी",manache:"मनाचे पाँच",major:"प्रमुख",nearFilter:"मेरे पास",heading:"अपना गणपति खोजें।<br>विश्वास के साथ दर्शन करें।",intro:"पुणे के प्रमुख गणपति मंडल, मैप लोकेशन, नेविगेशन, समुदाय द्वारा बताए गए भीड़ अपडेट और विज़िटर कमेंट्स — एक जगह।",title:"गणपति मंडल"},
+  mr:{near:"📍 माझ्या जवळचे गणपती",map:"🗺️ लाईव्ह नकाशा",ganpatis:"गणपती",home:"होम",liveMap:"लाईव्ह नकाशा",search:"गणपती किंवा परिसर शोधा…",all:"सर्व",manache:"मानाचे पाच",major:"प्रमुख",nearFilter:"माझ्या जवळ",heading:"तुमचा गणपती शोधा.<br>विश्वासाने दर्शन घ्या.",intro:"पुण्यातील प्रमुख गणपती मंडळे, नकाशावरील ठिकाणे, नेव्हिगेशन, समुदायाने दिलेले गर्दी अपडेट्स आणि भेट देणाऱ्यांच्या प्रतिक्रिया — एका ठिकाणी.",title:"गणपती मंडळे"}
+};
+let lang="en";
+function applyLanguage(){
+  const t=translations[lang];
+  document.documentElement.lang=lang;
+  $("langBtn").textContent=lang.toUpperCase();
+  $("nearBtn").textContent=t.near;
+  document.querySelector('a[href="#mapSection"]').textContent=t.map;
+  document.querySelector(".hero h1").innerHTML=t.heading;
+  document.querySelector(".hero p").textContent=t.intro;
+  document.querySelector(".section h2").textContent=t.title;
+  $("search").placeholder=t.search;
+  const chips=document.querySelectorAll(".chip");
+  chips[0].textContent=t.all; chips[1].textContent=t.manache; chips[2].textContent=t.major; chips[3].textContent=t.nearFilter;
+  document.querySelectorAll(".navbtn")[0].lastChild.textContent=t.home;
+  document.querySelectorAll(".navbtn")[1].lastChild.textContent=t.liveMap;
+  document.querySelectorAll(".navbtn")[3].lastChild.textContent=t.ganpatis;
+}
+$("langBtn").onclick=()=>{lang=lang==="en"?"hi":lang==="hi"?"mr":"en";applyLanguage();};
+renderCards();requestAnimationFrame(()=>{initMap();listenCrowd();});
+applyLanguage();
+const hashMandal=new URLSearchParams(location.hash.replace("#","?")).get("mandal");
+if(hashMandal) setTimeout(()=>openDetail(hashMandal),250);
+</script>
+<!-- Single-file build: no service worker dependency. -->
+</body>
+</html>
