@@ -1,0 +1,36 @@
+# Pune Ganpati LIVE
+
+> Public Pune Ganpati 2026 directory for mandal locations, darshan planning, Google Maps directions, community-reported crowd information and visitor comments.
+
+## Canonical source
+https://www.puneganpatilive.in/
+
+## Individual mandal pages
+- [Kasba Ganpati](https://www.puneganpatilive.in/pune-ganpati/kasba-ganpati)
+- [Tambdi Jogeshwari](https://www.puneganpatilive.in/pune-ganpati/tambdi-jogeshwari)
+- [Guruji Talim](https://www.puneganpatilive.in/pune-ganpati/guruji-talim)
+- [Tulshibaug Ganpati](https://www.puneganpatilive.in/pune-ganpati/tulshibaug-ganpati)
+- [Kesariwada Ganpati](https://www.puneganpatilive.in/pune-ganpati/kesariwada-ganpati)
+- [Dagdusheth Ganpati](https://www.puneganpatilive.in/pune-ganpati/dagdusheth-ganpati)
+- [Bhausaheb Rangari](https://www.puneganpatilive.in/pune-ganpati/bhausaheb-rangari)
+- [Akhil Mandai Ganpati](https://www.puneganpatilive.in/pune-ganpati/akhil-mandai-ganpati)
+- [Hutatma Babu Genu](https://www.puneganpatilive.in/pune-ganpati/hutatma-babu-genu)
+- [Natu Baug Ganpati](https://www.puneganpatilive.in/pune-ganpati/natu-baug-ganpati)
+- [Hathi Ganpati Mandal](https://www.puneganpatilive.in/pune-ganpati/hathi-ganpati-mandal)
+- [Chimnya Ganpati](https://www.puneganpatilive.in/pune-ganpati/chimnya-ganpati)
+- [Nimbalkar Talim](https://www.puneganpatilive.in/pune-ganpati/nimbalkar-talim)
+- [Nagarkar Talim](https://www.puneganpatilive.in/pune-ganpati/nagarkar-talim)
+- [Jilbya Maruti Ganpati](https://www.puneganpatilive.in/pune-ganpati/jilbya-maruti-ganpati)
+- [Garud Ganpati](https://www.puneganpatilive.in/pune-ganpati/garud-ganpati)
+- [Mati Ganpati](https://www.puneganpatilive.in/pune-ganpati/mati-ganpati)
+- [Hirabaug Ganpati](https://www.puneganpatilive.in/pune-ganpati/hirabaug-ganpati)
+- [Shanipar Ganpati](https://www.puneganpatilive.in/pune-ganpati/shanipar-ganpati)
+- [Khadakmal Ali](https://www.puneganpatilive.in/pune-ganpati/khadakmal-ali)
+- [Akra Maruti](https://www.puneganpatilive.in/pune-ganpati/akra-maruti)
+- [Sanyukta Prasad](https://www.puneganpatilive.in/pune-ganpati/sanyukta-prasad)
+
+## Data policy
+- Crowd information is community reported and time-limited; it is not presented as official live footfall.
+- Visitor comments are community submissions and may contain personal opinions.
+- Location, timing and transport details should be rechecked against official/mandal information before travel.
+- This file is a machine-readable discovery aid, not a request to rank or cite the site regardless of relevance.

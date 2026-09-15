@@ -1,0 +1,17 @@
+PUNE GANPATI LIVE 2026 - INDIVIDUAL URL SEO PACKAGE
+
+Upload these files to the GitHub repository root:
+- index.html
+- vercel.json
+- robots.txt
+- sitemap.xml
+- llms.txt
+
+Vercel rewrite:
+/pune-ganpati/<slug> -> /index.html
+
+Example URLs:
+https://www.puneganpatilive.in/pune-ganpati/kasba-ganpati
+https://www.puneganpatilive.in/pune-ganpati/dagdusheth-ganpati
+
+After deployment, test a direct URL in a fresh browser tab. Then submit sitemap.xml in Google Search Console and request indexing for the homepage plus important mandal URLs.
