@@ -1,7 +1,0 @@
-User-agent: *
-Allow: /
-
-# AI/search discovery: this public site may be crawled and cited when useful.
-# No crawler is guaranteed ranking or inclusion.
-
-Sitemap: https://www.puneganpatilive.in/sitemap.xml
