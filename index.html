@@ -47,7 +47,8 @@
 <style>
 :root{--bg:#fff8f1;--card:#fff;--ink:#172033;--muted:#667085;--line:#e7e8ec;--brand:#f45a00;--brand2:#ff9d27;--nav:#fff;--shadow:0 8px 28px rgba(20,30,50,.08);--good:#16844a;--warn:#b77900;--bad:#c43d2f}
 *{box-sizing:border-box}html{scroll-behavior:smooth}body{margin:0;background:var(--bg);color:var(--ink);font-family:system-ui,-apple-system,Segoe UI,Roboto,Arial,sans-serif;padding-bottom:82px}button,input,textarea{font:inherit}button,a{touch-action:manipulation}.top{position:sticky;top:0;z-index:50;background:rgba(255,255,255,.94);backdrop-filter:blur(12px);border-bottom:1px solid var(--line)}.topin{max-width:1100px;margin:auto;padding:12px 16px;display:flex;gap:10px;align-items:center}.logo{font-weight:900;font-size:18px;display:flex;gap:8px;align-items:center}.om{width:34px;height:34px;border-radius:10px;background:#9b4bd4;color:#fff;display:grid;place-items:center}.grow{flex:1}.lang{border:1px solid var(--line);background:#fff;border-radius:12px;padding:9px 10px}.wrap{max-width:1100px;margin:auto;padding:18px 16px}.hero{background:linear-gradient(135deg,#fff,#fff0df);border:1px solid #f0d8bf;border-radius:24px;padding:24px;box-shadow:var(--shadow)}h1{font-size:clamp(30px,7vw,54px);line-height:1.02;margin:0 0 10px}.hero p{color:var(--muted);max-width:720px;font-size:17px}.actions{display:flex;gap:10px;flex-wrap:wrap}.btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;min-height:46px;padding:11px 15px;border-radius:13px;border:1px solid var(--line);background:#fff;color:var(--ink);font-weight:800;text-decoration:none;cursor:pointer}.btn.primary{background:var(--brand);color:#fff;border-color:var(--brand)}.btn.soft{background:#fff3e8;color:#a83d00;border-color:#ffd5b3}.btn.danger{color:#b42318}.section{margin-top:22px;scroll-margin-top:90px}.detail{scroll-margin-top:90px}.sectionhead{display:flex;align-items:end;justify-content:space-between;gap:12px;margin-bottom:12px}.section h2{margin:0;font-size:24px}.muted{color:var(--muted)}.search{width:100%;min-height:48px;border:1px solid var(--line);border-radius:14px;padding:0 15px;background:#fff}.filters{display:flex;gap:8px;overflow:auto;padding:4px 0 2px}.chip{white-space:nowrap;border:1px solid var(--line);background:#fff;border-radius:999px;padding:9px 13px;font-weight:700}.chip.active{background:#172033;color:#fff}.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(270px,1fr));gap:14px}.card{background:var(--card);border:1px solid var(--line);border-radius:18px;padding:16px;box-shadow:var(--shadow)}.rank{display:inline-flex;background:#fff1dd;color:#9a4b00;border-radius:999px;padding:5px 9px;font-size:12px;font-weight:900}.card h3{margin:10px 0 4px;font-size:19px}.meta{font-size:13px;color:var(--muted);line-height:1.5}.status{display:inline-flex;margin:10px 0 12px;border-radius:999px;padding:6px 9px;font-size:12px;font-weight:900;background:#f1f3f5;color:#5c6470}.status.live{background:#e9f8ef;color:#177245}.status.busy{background:#fff1dc;color:#9a5a00}.status.vbusy{background:#ffe7df;color:#a23824}.cardactions{display:grid;grid-template-columns:1fr 1fr;gap:8px}.map{height:360px;border-radius:18px;overflow:hidden;border:1px solid var(--line);box-shadow:var(--shadow)}.detail{display:none}.detail.show{display:block}.back{margin-bottom:12px}.detailhero{background:#fff;border:1px solid var(--line);border-radius:20px;padding:18px}.info-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(190px,1fr));gap:10px;margin-top:14px}.info{background:#f8fafc;border:1px solid var(--line);border-radius:14px;padding:12px}.info b{display:block;margin-bottom:3px}.commentbox{margin-top:14px;background:#fff;border:1px solid var(--line);border-radius:18px;padding:16px}.field{width:100%;border:1px solid #ccd3dd;border-radius:13px;padding:12px;margin:6px 0 12px;background:#fff}.comments{display:grid;gap:10px;margin-top:14px}.comment{border:1px solid var(--line);border-radius:14px;padding:13px;background:#fff}.comment .who{font-weight:900}.comment .when{font-size:12px;color:var(--muted)}.empty{padding:18px;text-align:center;color:var(--muted);background:#fafafa;border-radius:14px}.crowd{display:grid;grid-template-columns:repeat(2,1fr);gap:8px}.crowd button{min-height:50px}.small{font-size:12px}.notice{padding:12px 14px;border-radius:13px;background:#eef6ff;color:#24486a;margin:10px 0}.error{background:#fff0f0;color:#a02d2d}.success{background:#edf9f1;color:#1c7042}.bottom{position:fixed;bottom:0;left:0;right:0;height:72px;background:rgba(255,255,255,.97);backdrop-filter:blur(10px);border-top:1px solid var(--line);z-index:100;display:flex;justify-content:center}.bottomin{max-width:700px;width:100%;display:grid;grid-template-columns:repeat(4,1fr)}.navbtn{border:0;background:transparent;font-weight:800;color:#586174;font-size:12px}.navbtn span{display:block;font-size:23px;margin-bottom:2px}.navbtn.active{color:var(--brand)}footer{margin-top:30px;background:#10182b;color:#d7ddea;padding:28px 16px}.footin{max-width:1100px;margin:auto}.source{font-size:12px;color:#8993a7}.leaflet-popup-content-wrapper{border-radius:14px}.leaflet-popup-content{margin:12px}.popup h4{margin:0 0 6px}.popup a{color:#b33e00;font-weight:800}.hidden{display:none!important}@media(min-width:800px){.map{height:460px}.bottom{position:static;height:auto;background:transparent;border:0;margin-top:20px}.bottomin{max-width:1100px;background:#fff;border:1px solid var(--line);border-radius:18px;box-shadow:var(--shadow)}body{padding-bottom:0}.navbtn{min-height:54px}.hero{padding:34px}}
-.hero-title{font-size:clamp(30px,7vw,54px);line-height:1.02;font-weight:900;margin:0 0 10px}.seo-content h1{font-size:clamp(28px,5vw,42px);line-height:1.12;margin:0 0 12px}.seo-content h2{font-size:22px;margin:24px 0 8px}.seo-content p,.seo-content li{color:var(--muted);line-height:1.65}.seo-content ul{margin:8px 0 0;padding-left:22px}.seo-content{margin-top:18px}</style>
+.hero-title{font-size:clamp(30px,7vw,54px);line-height:1.02;font-weight:900;margin:0 0 10px}.seo-content h1{font-size:clamp(28px,5vw,42px);line-height:1.12;margin:0 0 12px}.seo-content h2{font-size:22px;margin:24px 0 8px}.seo-content p,.seo-content li{color:var(--muted);line-height:1.65}.seo-content ul{margin:8px 0 0;padding-left:22px}.seo-content{margin-top:18px}.mandal-route-note{margin-top:10px}.seo-mandal{margin-top:18px}.seo-mandal h1{font-size:clamp(28px,6vw,46px);line-height:1.1;margin:0 0 10px}.seo-mandal p,.seo-mandal li{color:var(--muted);line-height:1.65}.seo-mandal ul{padding-left:22px}.backlink-list{display:flex;gap:8px;flex-wrap:wrap;margin-top:10px}
+</style>
 <!--
   SEO / AI DISCOVERY NOTES:
   This public page is the canonical source for Pune Ganpati LIVE 2026.
@@ -87,6 +88,12 @@
     <p>Use this guide to find mandal locations, open Google Maps directions, check available crowd information and plan your Pune Ganpati darshan. Visitor conditions can change during the festival, so check the latest available information before travelling.</p>
     <h2>Pune Ganpati Crowd Updates</h2>
     <p>Crowd information is community reported and may not represent official live footfall. Reports can change quickly and should be treated as indicative rather than official measurements.</p>
+    <details style="margin-top:18px">
+      <summary style="cursor:pointer;font-weight:800">Explore individual Pune Ganpati mandal pages</summary>
+      <div class="backlink-list">
+        <a class="btn" href="/pune-ganpati/kasba-ganpati">Kasba Ganpati</a><a class="btn" href="/pune-ganpati/tambdi-jogeshwari">Tambdi Jogeshwari</a><a class="btn" href="/pune-ganpati/guruji-talim">Guruji Talim</a><a class="btn" href="/pune-ganpati/tulshibaug-ganpati">Tulshibaug Ganpati</a><a class="btn" href="/pune-ganpati/kesariwada-ganpati">Kesariwada Ganpati</a><a class="btn" href="/pune-ganpati/dagdusheth-ganpati">Dagdusheth Ganpati</a><a class="btn" href="/pune-ganpati/bhausaheb-rangari">Bhausaheb Rangari</a><a class="btn" href="/pune-ganpati/akhil-mandai-ganpati">Akhil Mandai Ganpati</a><a class="btn" href="/pune-ganpati/hutatma-babu-genu">Hutatma Babu Genu</a><a class="btn" href="/pune-ganpati/natu-baug-ganpati">Natu Baug Ganpati</a><a class="btn" href="/pune-ganpati/hathi-ganpati-mandal">Hathi Ganpati Mandal</a><a class="btn" href="/pune-ganpati/chimnya-ganpati">Chimnya Ganpati</a><a class="btn" href="/pune-ganpati/nimbalkar-talim">Nimbalkar Talim</a><a class="btn" href="/pune-ganpati/nagarkar-talim">Nagarkar Talim</a><a class="btn" href="/pune-ganpati/jilbya-maruti-ganpati">Jilbya Maruti Ganpati</a><a class="btn" href="/pune-ganpati/garud-ganpati">Garud Ganpati</a><a class="btn" href="/pune-ganpati/mati-ganpati">Mati Ganpati</a><a class="btn" href="/pune-ganpati/hirabaug-ganpati">Hirabaug Ganpati</a><a class="btn" href="/pune-ganpati/shanipar-ganpati">Shanipar Ganpati</a><a class="btn" href="/pune-ganpati/khadakmal-ali">Khadakmal Ali</a><a class="btn" href="/pune-ganpati/akra-maruti">Akra Maruti</a><a class="btn" href="/pune-ganpati/sanyukta-prasad">Sanyukta Prasad</a>
+      </div>
+    </details>
   </section>
 
   <section class="section">
@@ -383,17 +390,45 @@ async function sharePage(){
    else{await navigator.clipboard.writeText(location.href);alert("Link copied. Share it on WhatsApp or Instagram.");}
  }catch(e){if(e?.name!=="AbortError")console.warn("Share:",e);}
 }
+function slugify(name){return String(name).toLowerCase().replace(/&/g,"and").replace(/[^a-z0-9]+/g,"-").replace(/^-+|-+$/g,"")}
+const routeBySlug=new Map(M.map(m=>[slugify(m.name),m]));
+function mandalUrl(m){return new URL("/pune-ganpati/"+slugify(m.name),location.origin).href}
+function updatePageSEO(m){
+  const canonical=m?mandalUrl(m):new URL("/",location.origin).href;
+  const title=m?`${m.name} Pune 2026 – Darshan, Location, Directions & Crowd Updates | Pune Ganpati LIVE`:`Pune Ganpati 2026 – Mandal List, Darshan & Crowd Updates | Pune Ganpati LIVE`;
+  const desc=m?`${m.name} Pune Ganpati 2026: location, darshan timings, Google Maps directions, nearby transport, community crowd updates and visitor comments.`:`Pune Ganpati 2026: Ganpati mandal list, Manache 5, darshan locations, Google Maps directions, community crowd updates and visitor comments.`;
+  document.title=title;
+  const setMeta=(sel,attr,val)=>{let e=document.head.querySelector(sel);if(e)e.setAttribute(attr,val)};
+  setMeta('meta[name="description"]','content',desc);
+  setMeta('meta[property="og:title"]','content',title);setMeta('meta[property="og:description"]','content',desc);
+  setMeta('meta[name="twitter:title"]','content',title);setMeta('meta[name="twitter:description"]','content',desc);
+  setMeta('link[rel="canonical"]','href',canonical);
+  let ld=document.getElementById('dynamicSchema');
+  if(!ld){ld=document.createElement('script');ld.type='application/ld+json';ld.id='dynamicSchema';document.head.appendChild(ld)}
+  ld.textContent=JSON.stringify({"@context":"https://schema.org","@graph":[{"@type":"WebSite","@id":new URL('/#website',location.origin).href,"url":new URL('/',location.origin).href,"name":"Pune Ganpati LIVE 2026"},{"@type":m?"TouristAttraction":"WebPage","@id":canonical+"#page","url":canonical,"name":title,"description":desc,"isPartOf":{"@id":new URL('/#website',location.origin).href},"inLanguage":["en","hi","mr"],...(m?{"address":{"@type":"PostalAddress","streetAddress":m.address,"addressLocality":"Pune","addressCountry":"IN"},"geo":{"@type":"GeoCoordinates","latitude":m.lat,"longitude":m.lng}}:{})}]});
+}
+function updateRoute(m,replace=false){
+  const url=m?mandalUrl(m):new URL('/',location.origin).href;
+  history[replace?'replaceState':'pushState']({mandal:m?.id||null},'',url.pathname+url.search);
+  updatePageSEO(m||null);
+}
+function routeFromPath(){
+  const match=location.pathname.match(/^\/pune-ganpati\/([^/]+)\/?$/i);
+  return match?routeBySlug.get(decodeURIComponent(match[1]).toLowerCase()):null;
+}
+
 async function shareMandal(m){
- const url=location.href.split("#")[0]+"#mandal="+encodeURIComponent(m.id);
+ const url=mandalUrl(m);
  const data={title:m.name+" — Pune Ganpati LIVE 2026",text:"Check this Ganpati mandal on Pune Ganpati LIVE 2026.",url};
  try{
    if(navigator.share){await navigator.share(data);}
    else{await navigator.clipboard.writeText(url);const msg=$("shareMsg");if(msg){msg.className="notice success";msg.textContent="Mandal link copied. Share it on WhatsApp or Instagram.";} }
  }catch(e){if(e?.name!=="AbortError")console.warn("Share mandal:",e);}
 }
-function openDetail(id){
+function openDetail(id,skipRoute=false){
  const m=M.find(x=>x.id===id);if(!m)return;
  currentMandal=m;
+ if(!skipRoute) updateRoute(m);
  $("homeView").style.display="none";
  $("detailView").classList.add("show");
  renderDetail(m);
@@ -407,6 +442,7 @@ function openDetail(id){
 $("backBtn").onclick=()=>{
   if(commentsUnsub){commentsUnsub();commentsUnsub=null;}
   currentMandal=null;
+  updateRoute(null,true);
   $("detailView").classList.remove("show");
   $("homeView").style.display="block";
   renderCards();
@@ -449,8 +485,11 @@ function applyLanguage(){
 $("langBtn").onclick=()=>{lang=lang==="en"?"hi":lang==="hi"?"mr":"en";applyLanguage();};
 renderCards();requestAnimationFrame(()=>{initMap();listenCrowd();listenGlobalComments();});
 applyLanguage();
-const hashMandal=new URLSearchParams(location.hash.replace("#","?")).get("mandal");
-if(hashMandal) setTimeout(()=>openDetail(hashMandal),250);
+const initialRoute=routeFromPath();
+updatePageSEO(initialRoute||null);
+if(initialRoute) setTimeout(()=>openDetail(initialRoute.id,true),250);
+else updateRoute(null,true);
+window.addEventListener('popstate',()=>{const m=routeFromPath();if(m){currentMandal=m;$("homeView").style.display="none";$("detailView").classList.add("show");renderDetail(m);updatePageSEO(m);window.scrollTo({top:0,behavior:"smooth"});}else{$("backBtn").click();updatePageSEO(null);}});
 </script>
 <!-- Single-file build: no service worker dependency. -->
 </body>
