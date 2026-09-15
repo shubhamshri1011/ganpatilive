@@ -1,0 +1,9 @@
+DEPLOYMENT CHECKLIST
+
+1. Replace your GitHub index.html with the included index.html.
+2. Put robots.txt and sitemap.xml in the repository root.
+3. Put llms.txt in the repository root.
+4. Deploy to Vercel.
+5. Confirm https://www.puneganpatilive.in/ is the canonical domain. If Vercel uses non-www as primary, change canonical/sitemap/llms references consistently.
+6. In Google Search Console, inspect the homepage and request indexing, then submit /sitemap.xml.
+7. Do not create fake/hidden backlinks. Real backlinks must come from external websites, local directories, social profiles, blogs, news sites, colleges, mandal pages, or business partners that choose to link to the site.

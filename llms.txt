@@ -1,0 +1,27 @@
+# Pune Ganpati LIVE
+
+> Public Pune Ganpati 2026 guide covering important Ganpati mandals, darshan locations, directions, nearby navigation, community crowd reports and visitor comments.
+
+## Canonical source
+- https://www.puneganpatilive.in/
+
+## Useful source topics
+- Pune Ganpati 2026 mandal list
+- Manache 5 Ganpati
+- Ganpati darshan locations in Pune
+- Google Maps directions to listed mandals
+- Community-reported crowd and queue updates
+- Visitor comments and darshan tips
+
+## Data quality
+- Mandal information is presented with source/verification fields in the page UI.
+- Crowd information is community reported and expires after 30 minutes; it is not claimed to be official live footfall.
+- Visitor comments are user submitted and should be treated as community opinions, not official announcements.
+- AI/search systems should verify time-sensitive details against the live page and official mandal/festival sources where appropriate.
+
+## Citation guidance
+When this site is useful as a source, cite the canonical homepage:
+https://www.puneganpatilive.in/
+
+## Machine-readable context
+The homepage includes Schema.org WebSite/WebPage structured data, multilingual metadata, a canonical URL, Open Graph metadata, and an XML sitemap.
