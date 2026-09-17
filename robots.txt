@@ -1,4 +1,10 @@
+# Allow all search engine bots to crawl the entire public site
 User-agent: *
 Allow: /
 
-Sitemap: https://www.puneganpatilive.in/sitemap.xml
+# Exclude any private backend or administrative paths (if applicable)
+Disallow: /admin/
+Disallow: /private/
+
+# Specify the location of your XML Sitemap for faster indexing
+Sitemap: https://yourdomain.com/sitemap.xml
