@@ -13,90 +13,17 @@
     <meta property="og:type" content="website">
     <meta property="og:locale" content="mr_IN">
 
-    <!-- Structured Data (JSON-LD Schemas for Top Mandals) -->
-    <script type="application/ld+json">
+    <!-- Dynamic Structured Data Container for SEO -->
+    <script type="application/ld+json" id="dynamic-schema">
     {
       "@context": "https://schema.org",
-      "@type": "Event",
-      "name": "Pune Ganeshotsav 2026 - Kasba Ganpati Darshan",
-      "startDate": "2026-09-14",
-      "endDate": "2026-09-24",
-      "eventAttendanceMode": "https://schema.org/OfflineEventAttendanceMode",
-      "eventStatus": "https://schema.org/EventScheduled",
-      "location": {
-        "@type": "Place",
-        "name": "Kasba Ganpati Mandal",
-        "address": {
-          "@type": "PostalAddress",
-          "streetAddress": "Kasba Peth",
-          "addressLocality": "Pune",
-          "addressRegion": "MH",
-          "postalCode": "411011",
-          "addressCountry": "IN"
-        }
-      },
-      "organizer": {
-        "@type": "Organization",
-        "name": "Pune Ganpati LIVE",
-        "url": "https://puneganpatilive.in"
-      }
-    }
-    </script>
-
-    <script type="application/ld+json">
-    {
-      "@context": "https://schema.org",
-      "@type": "Event",
-      "name": "Pune Ganeshotsav 2026 - Dagdusheth Halwai Ganpati Darshan",
-      "startDate": "2026-09-14",
-      "endDate": "2026-09-24",
-      "eventAttendanceMode": "https://schema.org/OfflineEventAttendanceMode",
-      "eventStatus": "https://schema.org/EventScheduled",
-      "location": {
-        "@type": "Place",
-        "name": "Shrimant Dagdusheth Halwai Ganpati Trust",
-        "address": {
-          "@type": "PostalAddress",
-          "streetAddress": "Budhwar Peth",
-          "addressLocality": "Pune",
-          "addressRegion": "MH",
-          "postalCode": "411002",
-          "addressCountry": "IN"
-        }
-      },
-      "organizer": {
-        "@type": "Organization",
-        "name": "Pune Ganpati LIVE",
-        "url": "https://puneganpatilive.in"
-      }
-    }
-    </script>
-
-    <script type="application/ld+json">
-    {
-      "@context": "https://schema.org",
-      "@type": "Event",
-      "name": "Pune Ganeshotsav 2026 - Tambdi Jogेश्वरी Ganpati Darshan",
-      "startDate": "2026-09-14",
-      "endDate": "2026-09-24",
-      "eventAttendanceMode": "https://schema.org/OfflineEventAttendanceMode",
-      "eventStatus": "https://schema.org/EventScheduled",
-      "location": {
-        "@type": "Place",
-        "name": "Tambdi Jogeshwari Temple Trust",
-        "address": {
-          "@type": "PostalAddress",
-          "streetAddress": "Budhwar Peth",
-          "addressLocality": "Pune",
-          "addressRegion": "MH",
-          "postalCode": "411002",
-          "addressCountry": "IN"
-        }
-      },
-      "organizer": {
-        "@type": "Organization",
-        "name": "Pune Ganpati LIVE",
-        "url": "https://puneganpatilive.in"
+      "@type": "WebSite",
+      "name": "Pune Ganpati LIVE",
+      "url": "https://puneganpatilive.in/",
+      "potentialAction": {
+        "@type": "SearchAction",
+        "target": "https://puneganpatilive.in/?s={search_term_string}",
+        "query-input": "required name=search_term_string"
       }
     }
     </script>
@@ -1013,6 +940,54 @@
     let unsubscribeComments = null;
     let lastSubmissionTime = 0;
 
+    function updateDynamicSchema(mandal = null) {
+        let schemaScript = document.getElementById('dynamic-schema');
+        if (!schemaScript) return;
+
+        if (mandal) {
+            const eventSchema = {
+                "@context": "https://schema.org",
+                "@type": "Event",
+                "name": `Pune Ganeshotsav 2026 - ${mandal.name} Darshan`,
+                "startDate": "2026-09-14",
+                "endDate": "2026-09-24",
+                "eventAttendanceMode": "https://schema.org/OfflineEventAttendanceMode",
+                "eventStatus": "https://schema.org/EventScheduled",
+                "location": {
+                    "@type": "Place",
+                    "name": mandal.name,
+                    "address": {
+                        "@type": "PostalAddress",
+                        "streetAddress": mandal.address,
+                        "addressLocality": "Pune",
+                        "addressRegion": "MH",
+                        "postalCode": "411002",
+                        "addressCountry": "IN"
+                    }
+                },
+                "organizer": {
+                    "@type": "Organization",
+                    "name": "Pune Ganpati LIVE",
+                    "url": "https://puneganpatilive.in"
+                }
+            };
+            schemaScript.textContent = JSON.stringify(eventSchema, null, 2);
+        } else {
+            const defaultSchema = {
+                "@context": "https://schema.org",
+                "@type": "WebSite",
+                "name": "Pune Ganpati LIVE",
+                "url": "https://puneganpatilive.in/",
+                "potentialAction": {
+                    "@type": "SearchAction",
+                    "target": "https://puneganpatilive.in/?s={search_term_string}",
+                    "query-input": "required name=search_term_string"
+                }
+            };
+            schemaScript.textContent = JSON.stringify(defaultSchema, null, 2);
+        }
+    }
+
     function navigateTo(view, param = null) {
         if (unsubscribeComments) {
             unsubscribeComments();
@@ -1025,22 +1000,29 @@
         
         if (view === 'home') {
             document.getElementById('mob-nav-home')?.classList.add('text-saffron-700', 'font-bold');
+            updateDynamicSchema(null);
             app.innerHTML = renderHomeView();
         } else if (view === 'directory') {
             document.getElementById('mob-nav-directory')?.classList.add('text-saffron-700', 'font-bold');
+            updateDynamicSchema(null);
             app.innerHTML = renderDirectoryView();
         } else if (view === 'map') {
             document.getElementById('mob-nav-map')?.classList.add('text-saffron-700', 'font-bold');
+            updateDynamicSchema(null);
             app.innerHTML = renderMapView();
             setTimeout(initLeafletMap, 150);
         } else if (view === 'nearme') {
             document.getElementById('mob-nav-nearme')?.classList.add('text-saffron-700', 'font-bold');
+            updateDynamicSchema(null);
             app.innerHTML = renderNearMeView();
             triggerGeolocation();
         } else if (view === 'emergency') {
             document.getElementById('mob-nav-emergency')?.classList.add('text-saffron-700', 'font-bold');
+            updateDynamicSchema(null);
             app.innerHTML = renderEmergencyView();
         } else if (view === 'mandal' && param) {
+            const mandalObj = MANDALS_DATA.find(m => m.id === param);
+            if (mandalObj) updateDynamicSchema(mandalObj);
             app.innerHTML = renderMandalDetailView(param);
             setupFirebaseCommentsListener(param);
         }
