@@ -1,55 +1,67 @@
-<!-- OpenGraph SEO -->
-<meta property="og:title" content="Pune Ganpati LIVE 2026 — Discover • Check • Navigate • Experience">
-<meta property="og:description" content="Your complete 2026 Pune Ganeshotsav navigation guide. Live crowd reports, exact map coordinates, nearby metro, bus, parking & emergency helplines.">
-<meta property="og:type" content="website">
-<meta property="og:locale" content="mr_IN">
+<!DOCTYPE html>
+<html lang="mr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Pune Ganpati LIVE 2026 — Live Crowd, Routes & Navigation Guide</title>
+    <meta name="description" content="Official 2026 Pune Ganeshotsav live guide. Check real-time crowd reports for Dagdusheth, Manache Paach, metro routes, parking, and emergency helplines.">
+    <link rel="canonical" href="https://yourdomain.com/">
 
-<!-- Fonts -->
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Noto+Sans+Devanagari:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <!-- OpenGraph SEO -->
+    <meta property="og:title" content="Pune Ganpati LIVE 2026 — Discover • Check • Navigate • Experience">
+    <meta property="og:description" content="Your complete 2026 Pune Ganeshotsav navigation guide. Live crowd reports, exact map coordinates, nearby metro, bus, parking & emergency helplines.">
+    <meta property="og:type" content="website">
+    <meta property="og:locale" content="mr_IN">
 
-<!-- Tailwind CSS CDN -->
-<script src="https://cdn.tailwindcss.com"></script>
-<script>
-    tailwind.config = {
-        theme: {
-            extend: {
-                colors: {
-                    saffron: {
-                        50: '#fffbeb',
-                        100: '#fef3c7',
-                        500: '#f59e0b',
-                        600: '#ea580c',
-                        700: '#c2410c',
-                        800: '#9a3412',
-                        900: '#7c2d12',
+    <!-- Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Noto+Sans+Devanagari:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        saffron: {
+                            50: '#fffbeb',
+                            100: '#fef3c7',
+                            500: '#f59e0b',
+                            600: '#ea580c',
+                            700: '#c2410c',
+                            800: '#9a3412',
+                            900: '#7c2d12',
+                        },
+                        festiveGold: '#d97706',
                     },
-                    festiveGold: '#d97706',
-                },
-                fontFamily: {
-                    sans: ['Inter', 'Noto Sans Devanagari', 'sans-serif'],
+                    fontFamily: {
+                        sans: ['Inter', 'Noto Sans Devanagari', 'sans-serif'],
+                    }
                 }
             }
         }
-    }
-</script>
+    </script>
 
-<!-- Leaflet CSS & JS for Interactive Map -->
-<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin="" />
-<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
+    <!-- Leaflet CSS & JS for Interactive Map -->
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin="" />
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
 
-<!-- Lucide Icons -->
-<script src="https://unpkg.com/lucide@latest"></script>
+    <!-- Lucide Icons -->
+    <script src="https://unpkg.com/lucide@latest"></script>
 
-<style>
-    .no-scrollbar::-webkit-scrollbar { display: none; }
-    .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
-    .touch-target { min-height: 44px; min-width: 44px; }
-    #map-container { min-height: 75vh; height: 100%; width: 100%; z-index: 1; }
-    .leaflet-popup-content-wrapper { border-radius: 12px; padding: 4px; }
-    html { scroll-behavior: smooth; }
-</style>
+    <style>
+        .no-scrollbar::-webkit-scrollbar { display: none; }
+        .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+        .touch-target { min-height: 44px; min-width: 44px; }
+        #map-container { min-height: 75vh; height: 100%; width: 100%; z-index: 1; }
+        .leaflet-popup-content-wrapper { border-radius: 12px; padding: 4px; }
+        html { scroll-behavior: smooth; }
+    </style>
+</head>
+<body class="bg-slate-50 text-slate-800 font-sans min-h-screen flex flex-col selection:bg-saffron-500 selection:text-white">
+
 <!-- Top Alert Disclaimer -->
 <div id="approx-notice" class="bg-amber-600 text-white text-xs md:text-sm px-4 py-2 flex items-center justify-between text-center font-medium shadow-sm">
     <div class="flex-1 flex items-center justify-center gap-2">
@@ -948,7 +960,6 @@
         lucide.createIcons();
         updateUIRefresh();
 
-        // Offset scroll to avoid sticky header overlay
         const headerOffset = 90;
         const elementPosition = app.getBoundingClientRect().top;
         const offsetPosition = elementPosition + window.pageYOffset - headerOffset;
@@ -1580,7 +1591,6 @@
         const { collection, query, where, onSnapshot } = window.FB;
 
         try {
-            // Client-side sorting without composite index requirement
             const q = query(collection(db, 'comments'), where('mandalId', '==', mandalId));
 
             unsubscribeComments = onSnapshot(q, (snapshot) => {
@@ -1590,7 +1600,6 @@
                     docs.push({ id: doc.id, ...data });
                 });
 
-                // Sort client-side by createdAt descending
                 docs.sort((a, b) => {
                     const timeA = a.createdAt?.toMillis ? a.createdAt.toMillis() : 0;
                     const timeB = b.createdAt?.toMillis ? b.createdAt.toMillis() : 0;
@@ -1634,7 +1643,7 @@
 
             }, (error) => {
                 console.error("COMMENT FIRESTORE ERROR:", error);
-                if (listEl) listEl.innerHTML = `<div class="p-4 text-center text-xs text-red-600 bg-red-50 rounded-xl">Unable to load live comments (Error: ${escapeHtml(error.code || error.message)}).</div>`;
+                if (listEl) listEl.innerHTML = `<div class="p-4 text-center text-xs text-red-600 bg-red-50 rounded-xl">Unable to load live comments.</div>`;
             });
 
         } catch (err) {
@@ -1729,7 +1738,7 @@
         } catch (err) {
             console.error("COMMENT FIRESTORE ERROR:", err);
             if (feedbackEl) {
-                feedbackEl.textContent = `Could not post your comment. Please try again. (${escapeHtml(err.code || err.message)})`;
+                feedbackEl.textContent = `Could not post your comment. Please try again.`;
                 feedbackEl.className = "text-xs font-bold text-red-600";
                 feedbackEl.classList.remove('hidden');
             }
@@ -2012,3 +2021,5 @@
         navigateTo('home');
     };
 </script>
+</body>
+</html>
