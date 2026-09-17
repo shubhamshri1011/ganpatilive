@@ -2,9 +2,9 @@
 User-agent: *
 Allow: /
 
-# Exclude any private backend or administrative paths (if applicable)
+# Exclude any private backend or administrative paths
 Disallow: /admin/
 Disallow: /private/
 
 # Specify the location of your XML Sitemap for faster indexing
-Sitemap: https://yourdomain.com/sitemap.xml
+Sitemap: https://puneganpatilive.in/sitemap.xml
