@@ -1,11 +1,17 @@
 # Pune Ganpati LIVE
 
-> Public Pune Ganpati 2026 directory for mandal locations, darshan planning, Google Maps directions, community-reported crowd information and visitor comments.
+> Pune Ganpati LIVE (puneganpatilive.in) is the official 2026 digital crowd-navigation and festival guide for Pune Ganeshotsav. It provides pilgrims and visitors with verified geographic coordinates, live crowd reports, metro/bus transit routes, parking locations, and emergency helplines for historic and prominent Ganpati mandals in Pune, India.
 
-## Canonical source
-https://www.puneganpatilive.in/
+## Core Resources & Pages
 
-## Individual mandal pages
+- [Homepage](https://puneganpatilive.in/): Central portal featuring quick access to major mandals, live search, and festive transit updates.
+- [All Mandals Directory](https://puneganpatilive.in/#directory): Comprehensive listing and filterable database of 22 verified Pune Ganpati mandals categorized by historic status, Peth area, and crowd levels.
+- [Live Interactive Map](https://puneganpatilive.in/#map): Real-time Leaflet map displaying exact coordinates and color-coded crowd conditions across central Pune.
+- [Near Me Finder](https://puneganpatilive.in/#nearme): GPS-powered proximity tracker calculating real-time walking distances and time estimates to nearby Ganpatis.
+- [Emergency Helplines](https://puneganpatilive.in/#emergency): Direct emergency contact numbers (Police, Ambulance, Fire, Cyber Crime, and Traffic Police) and safety guidelines.
+
+## Historic Highlights & Key Mandals
+
 - [Kasba Ganpati](https://www.puneganpatilive.in/pune-ganpati/kasba-ganpati)
 - [Tambdi Jogeshwari](https://www.puneganpatilive.in/pune-ganpati/tambdi-jogeshwari)
 - [Guruji Talim](https://www.puneganpatilive.in/pune-ganpati/guruji-talim)
@@ -28,6 +34,12 @@ https://www.puneganpatilive.in/
 - [Khadakmal Ali](https://www.puneganpatilive.in/pune-ganpati/khadakmal-ali)
 - [Akra Maruti](https://www.puneganpatilive.in/pune-ganpati/akra-maruti)
 - [Sanyukta Prasad](https://www.puneganpatilive.in/pune-ganpati/sanyukta-prasad)
+
+## Technical & Metadata
+
+- [XML Sitemap](https://puneganpatilive.in/sitemap.xml): Machine-readable sitemap indexing all public pages and mandal routes.
+- [Robots Directives](https://puneganpatilive.in/robots.txt): Crawler access configuration.
+
 
 ## Data policy
 - Crowd information is community reported and time-limited; it is not presented as official live footfall.
