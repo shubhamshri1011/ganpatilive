@@ -8,3 +8,17 @@ function isAdmin() {
 match /events/{id}   { allow read: if resource.data.published == true || isAdmin(); allow write: if isAdmin(); }
 match /products/{id} { allow read: if resource.data.published == true || isAdmin(); allow write: if isAdmin(); }
 match /settings/{id} { allow read: if true; allow write: if isAdmin(); }
+
+// --- Public "List your event" form: anyone can SUBMIT a pending request, only admin can read/approve ---
+match /submissions/{id} {
+  allow create: if request.resource.data.keys().hasOnly(['title','city','category','venue','area','start_date','end_date','start_time','passes_text','image_url','image_data','description','organizer','contact','status','createdAt'])
+      && request.resource.data.status == 'pending'
+      && request.resource.data.createdAt == request.time
+      && request.resource.data.title is string && request.resource.data.title.size() > 2 && request.resource.data.title.size() <= 150
+      && request.resource.data.venue is string && request.resource.data.venue.size() > 0 && request.resource.data.venue.size() <= 200
+      && request.resource.data.contact is string && request.resource.data.contact.size() >= 7 && request.resource.data.contact.size() <= 60
+      && request.resource.data.start_date is string && request.resource.data.start_date.size() == 10
+      && request.resource.data.description.size() <= 3000
+      && request.resource.data.image_data.size() <= 600000;
+  allow read, update, delete: if isAdmin();
+}

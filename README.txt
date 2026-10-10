@@ -32,3 +32,9 @@ FILES
 - data/events.json, products.json, settings.json: fallback/seed data (Firebase na mile tab bhi build chalta hai).
 - public/: static files (admin.html, assets, Ganpati guide pages).
 - _source/: Ganpati guide builder. Sirf tab chalao jab mandal data badle: python _source/spa_build.py
+
+LISTING REQUESTS (public form)
+- /list-your-event ab seedha Firebase mein request bhejta hai (email nahi). Poster upload bhi hota hai.
+- Admin > Requests tab mein pending requests dikhti hain: Approve and publish / Reject. Phir Publish site dabao.
+- Firestore rules mein firestore.rules.txt ka naya "match /submissions/{id}" block bhi add karke Publish karna zaroori hai.
+- Admin ke event/product form mein bhi ab poster upload hai (link ki zaroorat nahi).

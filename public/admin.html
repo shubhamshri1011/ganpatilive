@@ -18,12 +18,12 @@ textarea.bulk{width:100%;min-height:160px;font:13px monospace;padding:10px;borde
 <section id="login" class="panel" style="max-width:480px;margin:40px auto"><h1 style="font-size:28px">Owner login</h1><p class="meta">Sign in with the owner Google account to manage events, passes and products.</p><button class="btn sf lg" id="in">Sign in with Google</button><p id="lerr" class="meta" style="color:#b91c1c"></p></section>
 <section id="app" hidden>
 <div class="help"><b>How it works:</b> Save changes here (stored in Firebase). Then press <b>Publish site</b> and the live site updates in about a minute. First time: Vercel > Settings > Git > Deploy Hooks > create a hook, paste its URL when asked.</div>
-<div class="tabs" role="tablist"><button data-t="events" aria-selected="true">Events</button><button data-t="products">Products</button><button data-t="bulk">Bulk import</button><button data-t="settings">Settings</button></div>
+<div class="tabs" role="tablist"><button data-t="requests" aria-selected="true">Requests <span id="rc"></span></button><button data-t="events">Events</button><button data-t="products">Products</button><button data-t="bulk">Bulk import</button><button data-t="settings">Settings</button></div>
 <div id="v"></div></section></div></main><div id="toast"></div>
 <script type="module">
 import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
 import { getAuth, GoogleAuthProvider, signInWithPopup, signOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
-import { getFirestore, collection, doc, getDocs, getDoc, setDoc, deleteDoc, serverTimestamp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+import { getFirestore, collection, doc, getDocs, getDoc, setDoc, updateDoc, deleteDoc, serverTimestamp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
 const app = initializeApp({ apiKey: "AIzaSyAXbMPHQDSN-KKoS2OUEegwuapwzXwM-Ek", authDomain: "puneganpatilive.firebaseapp.com", projectId: "puneganpatilive", storageBucket: "puneganpatilive.firebasestorage.app", messagingSenderId: "848829850195", appId: "1:848829850195:web:c3b14375d19c5689cd9ca6" }, 'admin');
 const auth = getAuth(app), db = getFirestore(app);
 const CITIES = { pune: 'Pune', bhopal: 'Bhopal', mumbai: 'Mumbai', nashik: 'Nashik', nagpur: 'Nagpur', indore: 'Indore' };
@@ -31,7 +31,7 @@ const CATS = { festival: 'Festivals', garba: 'Garba & Dandiya', cultural: 'Cultu
 const $ = s => document.querySelector(s), esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
 const slugify = s => s.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '');
 const toast = (m, ms = 4000) => { const t = $('#toast'); t.textContent = m; t.style.display = 'block'; clearTimeout(toast.h); toast.h = setTimeout(() => t.style.display = 'none', ms); };
-let tab = 'events';
+let tab = 'requests';
 $('#in').onclick = async () => { try { await signInWithPopup(auth, new GoogleAuthProvider()); } catch (e) { $('#lerr').textContent = 'Sign-in failed: ' + e.code; } };
 $('#out').onclick = () => signOut(auth);
 $('#pub').onclick = async () => {
@@ -41,7 +41,7 @@ $('#pub').onclick = async () => {
 };
 onAuthStateChanged(auth, u => { const on = !!u; $('#login').hidden = on; $('#app').hidden = !on; $('#out').hidden = !on; $('#pub').hidden = !on; $('#who').textContent = u ? u.email : ''; if (on) show(); });
 document.querySelectorAll('.tabs button').forEach(b => b.onclick = () => { tab = b.dataset.t; document.querySelectorAll('.tabs button').forEach(x => x.setAttribute('aria-selected', x === b)); show(); });
-const show = () => ({ events: listView, products: listView, bulk: bulkView, settings: settingsView })[tab](tab);
+const show = () => ({ requests: requestsView, events: listView, products: listView, bulk: bulkView, settings: settingsView })[tab](tab);
 const denied = e => { $('#v').innerHTML = `<div class="panel"><b>${e.code === 'permission-denied' ? 'This Google account is not allowed.' : 'Error: ' + esc(e.message)}</b><p class="meta">Sign in with the owner account and make sure the Firestore rules from README are published.</p></div>`; };
 // ---------- config-driven forms ----------
 const F = {
@@ -55,6 +55,49 @@ function field([k, label, type], v) {
   return `<label class="k${w}">${label}<input name="${k}" type="${type}" value="${esc(val)}"></label>`;
 }
 function passRow(p = {}) { return `<div class="prow"><input placeholder="Pass name (Couple)" data-p="name" value="${esc(p.name)}"><input placeholder="Price" data-p="price" value="${esc(p.price)}"><input placeholder="Razorpay payment link" data-p="buy_url" value="${esc(p.buy_url)}"><input placeholder="Note (optional)" data-p="note" value="${esc(p.note)}"><button type="button" class="btn sm alt" data-rm>X</button></div>`; }
+
+// ---------- poster upload (compressed in the browser, stored with the event, written out as a real image at build) ----------
+function compressImage(file) {
+  return new Promise((res, rej) => {
+    const u = URL.createObjectURL(file), im = new Image();
+    im.onerror = () => { URL.revokeObjectURL(u); rej(new Error('bad image')); };
+    im.onload = () => {
+      const k = Math.min(1, 1000 / Math.max(im.naturalWidth, im.naturalHeight)), c = document.createElement('canvas');
+      c.width = Math.round(im.naturalWidth * k); c.height = Math.round(im.naturalHeight * k); c.getContext('2d').drawImage(im, 0, 0, c.width, c.height); URL.revokeObjectURL(u);
+      let q = 0.82, out = c.toDataURL('image/jpeg', q); while (out.length > 450000 && q > 0.35) { q -= 0.1; out = c.toDataURL('image/jpeg', q); }
+      out.length > 450000 ? rej(new Error('too big')) : res(out);
+    };
+    im.src = u;
+  });
+}
+function parsePasses(t) { return String(t || '').split(/[,;\n]+/).map(x => x.trim()).filter(Boolean).map(x => { const m = x.match(/^(.*?)[\s:\-]*(?:rs\.?|inr|₹)?\s*(\d+)\s*$/i); return m && m[1].trim() ? { name: m[1].trim(), price: m[2], buy_url: '', note: '' } : null; }).filter(Boolean); }
+async function uniqueId(kind, title, city) { let id = slugify(title + (city && !title.toLowerCase().includes(CITIES[city].toLowerCase()) ? ' ' + city : '')) || 'item-' + Date.now(); let n = 2; const b = id; while ((await getDoc(doc(db, kind, id))).exists()) id = b + '-' + n++; return id; }
+// ---------- requests (public "List your event" form) ----------
+async function requestsView() {
+  $('#v').innerHTML = '<p class="meta">Loading...</p>';
+  try {
+    const snap = await getDocs(collection(db, 'submissions')); const all = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+    const rows = all.filter(r => r.status === 'pending').sort((a, b) => (b.createdAt?.seconds || 0) - (a.createdAt?.seconds || 0));
+    $('#rc').textContent = rows.length ? '(' + rows.length + ')' : '';
+    const wa = c => { const n = String(c || '').replace(/\D/g, ''); return n.length >= 10 ? 'https://wa.me/' + (n.length === 10 ? '91' + n : n) : ''; };
+    $('#v').innerHTML = `<div class="panel"><h2>Listing requests (${rows.length} pending)</h2><div class="help">Approve publishes the event right away (then press <b>Publish site</b>). You can edit it later in the Events tab. Reject hides the request.</div>${rows.length ? rows.map(r => `<div class="panel" style="margin:10px 0">
+      <div style="display:flex;gap:14px;flex-wrap:wrap">${r.image_data || r.image_url ? `<img src="${esc(r.image_data || r.image_url)}" alt="" style="width:120px;height:120px;object-fit:cover;border-radius:10px">` : ''}
+      <div style="flex:1;min-width:220px"><b>${esc(r.title)}</b><div class="meta">${esc(CITIES[r.city] || r.city)} | ${esc(CATS[r.category] || r.category)} | ${esc(r.start_date)}${r.end_date && r.end_date !== r.start_date ? ' to ' + esc(r.end_date) : ''} ${esc(r.start_time || '')}</div>
+      <div class="meta">${esc(r.venue)}${r.area ? ', ' + esc(r.area) : ''}</div><div class="meta">Passes: ${esc(r.passes_text || 'none (free)')}</div>
+      <p style="margin:6px 0">${esc(r.description || '')}</p><div class="meta">Organiser: ${esc(r.organizer || '-')} | Contact: ${wa(r.contact) ? `<a href="${wa(r.contact)}" target="_blank" rel="noopener">${esc(r.contact)}</a>` : esc(r.contact)}</div></div></div>
+      <div class="row" style="margin-top:10px"><button class="btn sf sm" data-ok="${r.id}">Approve and publish</button><button class="btn alt sm" data-no="${r.id}">Reject</button></div></div>`).join('') : '<p class="meta">No pending requests.</p>'}</div>`;
+    document.querySelectorAll('[data-ok]').forEach(b => b.onclick = async () => {
+      const r = rows.find(x => x.id === b.dataset.ok); b.disabled = true;
+      try {
+        const id = await uniqueId('events', r.title, r.city);
+        await setDoc(doc(db, 'events', id), { title: r.title, city: r.city, category: r.category, venue: r.venue, area: r.area || '', address: '', start_date: r.start_date, end_date: r.end_date || r.start_date, start_time: r.start_time || '', price: '', ticket_url: '', image_url: r.image_url || '', image_data: r.image_data || '', organizer: r.organizer || '', description: r.description || '', passes: parsePasses(r.passes_text), featured: false, published: true, source: 'listing-form', updatedAt: serverTimestamp() });
+        await updateDoc(doc(db, 'submissions', r.id), { status: 'approved', eventId: id });
+        toast('Approved. Press Publish site to make it live.', 6000); requestsView();
+      } catch (e) { b.disabled = false; toast('Failed: ' + (e.code || e.message)); }
+    });
+    document.querySelectorAll('[data-no]').forEach(b => b.onclick = async () => { if (!confirm('Reject this request?')) return; try { await updateDoc(doc(db, 'submissions', b.dataset.no), { status: 'rejected' }); toast('Rejected.'); requestsView(); } catch (e) { toast('Failed: ' + (e.code || e.message)); } });
+  } catch (e) { denied(e); }
+}
 async function listView(kind) {
   $('#v').innerHTML = '<p class="meta">Loading...</p>';
   try {
@@ -69,17 +112,21 @@ async function listView(kind) {
 function formView(kind, d) {
   const isEv = kind === 'events';
   $('#v').innerHTML = `<form class="panel f" id="fm" style="grid-template-columns:1fr 1fr"><h2 class="w" style="grid-column:1/-1">${d ? 'Edit' : 'New'} ${isEv ? 'event' : 'product'}</h2>${F[kind].map(f => field(f, d)).join('')}
+  <label class="k w" style="grid-column:1/-1">Poster / image: upload from your phone or computer (instead of a link)<input type="file" id="imgf" accept="image/*"></label><div style="grid-column:1/-1"><img id="imgp" alt="" ${(d?.image_data || d?.image_url) ? `src="${esc(d.image_data || d.image_url)}"` : 'hidden'} style="max-width:200px;border-radius:10px"> <button type="button" class="btn sm alt" id="imgx" ${(d?.image_data) ? '' : 'hidden'}>Remove uploaded image</button></div>
   <label class="c"><input type="checkbox" name="featured"${d?.featured ? ' checked' : ''}> ${isEv ? 'Featured (shown first)' : 'Show as pick'}</label><label class="c"><input type="checkbox" name="published"${d ? (d.published ? ' checked' : '') : ' checked'}> Published (visible on site)</label>
   ${isEv ? `<div style="grid-column:1/-1"><h3 style="margin:8px 0">Passes (optional)</h3><div class="help">Create a Payment Link in Razorpay for each pass type (Dashboard > Payment Links > Create) and paste it here. No link? The Book button opens WhatsApp if a number is set in Settings.</div><div id="passes">${(d?.passes || []).map(passRow).join('')}</div><button type="button" class="btn sm alt" id="addp">+ Add pass</button></div>` : ''}
   <div class="row" style="grid-column:1/-1"><button class="btn sf lg">Save</button><button type="button" class="btn alt lg" id="cx">Cancel</button></div></form>`;
   $('#cx').onclick = () => show();
+  let imgData; /* undefined = keep as is, '' = removed */
+  $('#imgf').onchange = async e => { const f = e.target.files[0]; if (!f) return; try { imgData = await compressImage(f); $('#imgp').src = imgData; $('#imgp').hidden = false; $('#imgx').hidden = false; } catch { toast('Could not read that image.'); e.target.value = ''; } };
+  $('#imgx').onclick = () => { imgData = ''; $('#imgp').hidden = true; $('#imgx').hidden = true; $('#imgf').value = ''; };
   if (isEv) { $('#addp').onclick = () => $('#passes').insertAdjacentHTML('beforeend', passRow()); $('#passes').onclick = e => e.target.dataset.rm !== undefined && e.target.closest('.prow').remove(); }
   $('#fm').onsubmit = async e => {
-    e.preventDefault(); const fd = new FormData(e.target), data = {};
+    e.preventDefault(); const fd = new FormData(e.target), data = { ...(d || {}) }; delete data.id;
     F[kind].forEach(([k]) => data[k] = String(fd.get(k) || '').trim());
-    data.featured = !!fd.get('featured'); data.published = !!fd.get('published');
+    data.featured = !!fd.get('featured'); data.published = !!fd.get('published'); if (imgData !== undefined) data.image_data = imgData;
     if (isEv) { data.passes = [...document.querySelectorAll('.prow')].map(r => Object.fromEntries([...r.querySelectorAll('[data-p]')].map(i => [i.dataset.p, i.value.trim()]))).filter(p => p.name); if (!data.title || !data.city || !data.category || !data.start_date) return toast('Title, city, category and start date are required.'); }
-    else if (!data.title || !data.price || !data.image_url) return toast('Name, price and image link are required.');
+    else if (!data.title || !data.price || !(data.image_url || data.image_data)) return toast('Name, price and an image (link or upload) are required.');
     let id = d?.id; if (!id) { id = slugify(data.title + (isEv && !data.title.toLowerCase().includes(CITIES[data.city].toLowerCase()) ? ' ' + data.city : '')) || 'item-' + Date.now(); let n = 2, b = id; while ((await getDoc(doc(db, kind, id))).exists()) id = b + '-' + n++; }
     try { await setDoc(doc(db, kind, id), { ...data, updatedAt: serverTimestamp() }); toast('Saved. Press Publish site to update the live site.', 6000); show(); } catch (er) { toast('Save failed: ' + er.code); }
   };

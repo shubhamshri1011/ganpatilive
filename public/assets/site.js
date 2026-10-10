@@ -48,9 +48,54 @@
     if (msg) { st.textContent = msg; st.hidden = false; }
   }
   var f = document.getElementById('lyf');
-  if (f) f.addEventListener('submit', function (e) {
-    e.preventDefault(); var d = new FormData(f), L = [];
-    d.forEach(function (v, k) { L.push(k + ': ' + v); });
-    location.href = 'mailto:shubhamshri.1110@gmail.com?subject=' + encodeURIComponent('Event listing: ' + d.get('Event name')) + '&body=' + encodeURIComponent(L.join('\n'));
-  });
+  if (f) {
+    var imgData = '', msg = document.getElementById('lymsg'), btn = document.getElementById('lybtn'), fileIn = document.getElementById('lyimg'), prev = document.getElementById('lyprev');
+    var say = function (t, bad) { msg.textContent = t; msg.style.color = bad ? '#b91c1c' : ''; };
+    var compress = function (file) {
+      return new Promise(function (res, rej) {
+        var u = URL.createObjectURL(file), im = new Image();
+        im.onerror = function () { URL.revokeObjectURL(u); rej(new Error('bad image')); };
+        im.onload = function () {
+          var w = im.naturalWidth, h = im.naturalHeight, k = Math.min(1, 1000 / Math.max(w, h)), c = document.createElement('canvas');
+          c.width = Math.round(w * k); c.height = Math.round(h * k); c.getContext('2d').drawImage(im, 0, 0, c.width, c.height);
+          URL.revokeObjectURL(u);
+          var q = 0.82, out = c.toDataURL('image/jpeg', q);
+          while (out.length > 450000 && q > 0.35) { q -= 0.1; out = c.toDataURL('image/jpeg', q); }
+          out.length > 450000 ? rej(new Error('too big')) : res(out);
+        };
+        im.src = u;
+      });
+    };
+    fileIn.addEventListener('change', function () {
+      imgData = ''; prev.hidden = true; var file = fileIn.files[0]; if (!file) return;
+      if (file.type.indexOf('image/') !== 0) { say('Please choose an image file.', 1); fileIn.value = ''; return; }
+      say('Preparing image...');
+      compress(file).then(function (d) { imgData = d; prev.src = d; prev.hidden = false; say(''); }).catch(function () { say('Could not read that image. Try a different one or paste a link.', 1); fileIn.value = ''; });
+    });
+    f.addEventListener('submit', function (e) {
+      e.preventDefault(); var d = new FormData(f);
+      if (d.get('Website')) return; /* honeypot */
+      var st = d.get('Start date'), en = d.get('End date') || st;
+      if (en < st) { say('End date cannot be before the start date.', 1); return; }
+      btn.disabled = true; say('Sending...');
+      var cat = d.get('Category'), city = d.get('City');
+      var rec = {
+        title: String(d.get('Event name')).trim().slice(0, 150), city: city, category: cat, venue: String(d.get('Venue')).trim().slice(0, 200),
+        area: String(d.get('Area') || '').trim().slice(0, 100), start_date: st, end_date: en, start_time: String(d.get('Start time') || '').trim().slice(0, 30),
+        passes_text: String(d.get('Pass types and prices') || '').trim().slice(0, 300), image_url: String(d.get('Image link') || '').trim().slice(0, 500),
+        image_data: imgData, description: String(d.get('Description') || '').trim().slice(0, 3000), organizer: String(d.get('Organiser') || '').trim().slice(0, 120),
+        contact: String(d.get('Phone or WhatsApp')).trim().slice(0, 60), status: 'pending'
+      };
+      var V = 'https://www.gstatic.com/firebasejs/11.6.1/';
+      Promise.all([import(V + 'firebase-app.js'), import(V + 'firebase-firestore.js')]).then(function (m) {
+        var app = m[0].initializeApp({ apiKey: 'AIzaSyAXbMPHQDSN-KKoS2OUEegwuapwzXwM-Ek', authDomain: 'puneganpatilive.firebaseapp.com', projectId: 'puneganpatilive', appId: '1:848829850195:web:c3b14375d19c5689cd9ca6' }, 'pub');
+        var db = m[1].getFirestore(app); rec.createdAt = m[1].serverTimestamp();
+        return m[1].addDoc(m[1].collection(db, 'submissions'), rec);
+      }).then(function () {
+        f.hidden = true; document.getElementById('lyok').hidden = false; window.scrollTo(0, 0);
+      }).catch(function () {
+        btn.disabled = false; say('Could not send right now. Please try again, or message us on WhatsApp.', 1);
+      });
+    });
+  }
 })();
