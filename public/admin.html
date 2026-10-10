@@ -87,7 +87,10 @@ async function requestsView() {
       <p style="margin:6px 0">${esc(r.description || '')}</p><div class="meta">Organiser: ${esc(r.organizer || '-')} | Contact: ${wa(r.contact) ? `<a href="${wa(r.contact)}" target="_blank" rel="noopener">${esc(r.contact)}</a>` : esc(r.contact)}</div></div></div>
       <div class="row" style="margin-top:10px"><button class="btn sf sm" data-ok="${r.id}">Approve and publish</button><button class="btn alt sm" data-no="${r.id}">Reject</button></div></div>`).join('') : '<p class="meta">No pending requests.</p>'}</div>`;
     document.querySelectorAll('[data-ok]').forEach(b => b.onclick = async () => {
-      const r = rows.find(x => x.id === b.dataset.ok); b.disabled = true;
+      const r = { ...rows.find(x => x.id === b.dataset.ok) }; b.disabled = true;
+      const key = (map, v) => { v = String(v || '').trim(); const l = v.toLowerCase(); return Object.keys(map).find(k => k === l || String(map[k]).toLowerCase() === l) || ''; };
+      r.city = key(CITIES, r.city); r.category = key(CATS, r.category);
+      if (!r.city || !r.category || !r.title || !r.start_date) { b.disabled = false; return toast('This request has an invalid city, category or date.'); }
       try {
         const id = await uniqueId('events', r.title, r.city);
         await setDoc(doc(db, 'events', id), { title: r.title, city: r.city, category: r.category, venue: r.venue, area: r.area || '', address: '', start_date: r.start_date, end_date: r.end_date || r.start_date, start_time: r.start_time || '', price: '', ticket_url: '', image_url: r.image_url || '', image_data: r.image_data || '', organizer: r.organizer || '', description: r.description || '', passes: parsePasses(r.passes_text), featured: false, published: true, source: 'listing-form', updatedAt: serverTimestamp() });
