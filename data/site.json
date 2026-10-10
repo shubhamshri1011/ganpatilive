@@ -1,0 +1,393 @@
+{
+ "SITE": "https://www.puneganpatilive.in",
+ "CITIES": {
+  "pune": [
+   "Pune",
+   "Maharashtra",
+   18.5204,
+   73.8567
+  ],
+  "bhopal": [
+   "Bhopal",
+   "Madhya Pradesh",
+   23.2599,
+   77.4126
+  ],
+  "mumbai": [
+   "Mumbai",
+   "Maharashtra",
+   19.076,
+   72.8777
+  ],
+  "nashik": [
+   "Nashik",
+   "Maharashtra",
+   19.9975,
+   73.7898
+  ],
+  "nagpur": [
+   "Nagpur",
+   "Maharashtra",
+   21.1458,
+   79.0882
+  ],
+  "indore": [
+   "Indore",
+   "Madhya Pradesh",
+   22.7196,
+   75.8577
+  ]
+ },
+ "CATS": {
+  "festival": "Festivals",
+  "garba": "Garba & Dandiya",
+  "cultural": "Cultural",
+  "market": "Markets & Melas",
+  "music": "Music & Concerts",
+  "workshop": "Workshops"
+ },
+ "FEST": [
+  {
+   "id": "navratri-2026",
+   "name": "Sharad Navratri 2026",
+   "start": "2026-10-11",
+   "end": "2026-10-19",
+   "label": "11-19 Oct",
+   "desc": "Nine nights of Devi worship, garba and dandiya, starting with Ghatasthapana on Sunday 11 October."
+  },
+  {
+   "id": "dussehra-2026",
+   "name": "Vijayadashami (Dussehra) 2026",
+   "start": "2026-10-20",
+   "end": "2026-10-20",
+   "label": "20 Oct",
+   "desc": "Dussehra falls on Tuesday 20 October 2026, the day after Navratri ends."
+  },
+  {
+   "id": "dhanteras-2026",
+   "name": "Dhanteras 2026",
+   "start": "2026-11-06",
+   "end": "2026-11-06",
+   "label": "6 Nov",
+   "desc": "First day of the Diwali festival; popular for buying gold, utensils and new items."
+  },
+  {
+   "id": "diwali-2026",
+   "name": "Diwali (Lakshmi Puja) 2026",
+   "start": "2026-11-08",
+   "end": "2026-11-08",
+   "label": "8 Nov",
+   "desc": "Diwali Lakshmi Puja on Sunday 8 November 2026. Puja muhurat varies by panchang."
+  },
+  {
+   "id": "govardhan-2026",
+   "name": "Govardhan Puja 2026",
+   "start": "2026-11-10",
+   "end": "2026-11-10",
+   "label": "10 Nov",
+   "desc": "Govardhan Puja, the day after Diwali."
+  },
+  {
+   "id": "bhaidooj-2026",
+   "name": "Bhai Dooj 2026",
+   "start": "2026-11-11",
+   "end": "2026-11-11",
+   "label": "11 Nov",
+   "desc": "Bhai Dooj on Wednesday 11 November 2026."
+  }
+ ],
+ "FAQ": {
+  "navratri": [
+   [
+    "When is Navratri 2026 in Pune?",
+    "Sharad Navratri 2026 starts on Sunday 11 October with Ghatasthapana and runs nine nights to Monday 19 October. Vijayadashami (Dussehra) is on Tuesday 20 October 2026."
+   ],
+   [
+    "What are the nine Navratri colours for 2026?",
+    "Day 1 to Day 9: Orange, White, Red, Royal Blue, Yellow, Green, Grey, Purple and Peacock Green. Colour conventions can differ slightly by region."
+   ],
+   [
+    "Where can I find garba and dandiya events in Pune?",
+    "Pune Ganpati LIVE lists community-submitted garba and dandiya events with venue, date, time and booking link. Organisers can submit an event for free by email. Always confirm timings and entry rules with the organiser."
+   ],
+   [
+    "Where can I rent a garba outfit or chaniya choli in Pune?",
+    "BlinkWear.in is a fashion rental marketplace with a hub in Pune. It offers festive lehengas and Navratri looks with rentals from Rs 499 per day, doorstep delivery and pickup. Check current availability on the BlinkWear website."
+   ],
+   [
+    "Which Devi temples can I visit in Pune during Navratri?",
+    "Well-known options include Chaturshringi Mata Mandir on Senapati Bapat Road and the Tambdi Jogeshwari temple in the old city. Expect long queues on weekends and on Ashtami; check the temple trust for darshan timings."
+   ]
+  ],
+  "diwali": [
+   [
+    "When is Diwali 2026?",
+    "Diwali (Lakshmi Puja) is on Sunday 8 November 2026. Dhanteras is on 6 November, Govardhan Puja on 10 November and Bhai Dooj on 11 November. Puja muhurat varies by panchang."
+   ],
+   [
+    "Where to shop for Diwali in Pune?",
+    "Laxmi Road, Tulshibaug and the Peth-area markets are traditional festive shopping areas for clothes, lamps, decor and puja items. Evenings are crowded with traffic diversions, so the metro is the easiest way into the old city."
+   ],
+   [
+    "Where can I rent festive outfits for Diwali parties in Pune?",
+    "BlinkWear.in rents designer lehengas, ethnic wear and dresses with doorstep delivery and pickup, with rentals from Rs 499 per day. Check availability for your date on the BlinkWear website."
+   ]
+  ],
+  "events": [
+   [
+    "Which festivals are coming up in Pune in October and November 2026?",
+    "Sharad Navratri (11-19 October), Dussehra (20 October), Dhanteras (6 November), Diwali (8 November), Govardhan Puja (10 November) and Bhai Dooj (11 November)."
+   ],
+   [
+    "How do I list my event on Pune Ganpati LIVE?",
+    "Use the submit form on this page or email shubhamshri.1110@gmail.com with the event name, venue, date, time, price and booking link. Basic listings are free; featured placement is available."
+   ],
+   [
+    "Is Ganeshotsav 2026 over?",
+    "Yes. Ganeshotsav 2026 has ended, but mandal timings, locations, metro routes and emergency information stay available in the directory for planning next year."
+   ]
+  ]
+ },
+ "PAGES": {
+  "/navratri": {
+   "t": "Pune Navratri 2026: Garba & Dandiya Events, Dates, Colours",
+   "d": "Navratri 2026 in Pune: 11-19 Oct dates, nine-day colour guide, garba and dandiya events, Devi temples and festive outfit rentals. Updated daily.",
+   "h1": "Navratri 2026 in Pune",
+   "q": "Sharad Navratri 2026 runs from Sunday 11 October to Monday 19 October, with Dussehra on 20 October. This guide covers the nine-day colours, garba and dandiya events in Pune, Devi temples and where to rent festive outfits.",
+   "faq": "navratri"
+  },
+  "/diwali": {
+   "t": "Pune Diwali 2026: Dates, Shopping Markets & Festive Outfits",
+   "d": "Diwali 2026 in Pune: Dhanteras 6 Nov, Lakshmi Puja 8 Nov, where to shop for decor and puja items, and festive outfit rentals with doorstep delivery.",
+   "h1": "Diwali 2026 in Pune",
+   "q": "Diwali (Lakshmi Puja) 2026 is on Sunday 8 November, with Dhanteras on 6 November. Laxmi Road, Tulshibaug and the Peth markets are the classic places to shop in Pune.",
+   "faq": "diwali"
+  },
+  "/about": {
+   "t": "About, Privacy & Advertise - Pune Ganpati LIVE",
+   "d": "About Pune Ganpati LIVE, how it handles data, affiliate and sponsored link disclosure, and how to advertise or list an event.",
+   "h1": "About, privacy and advertising",
+   "q": "Pune Ganpati LIVE is an independent community guide for Pune festivals. Some links are affiliate or sponsored; this page explains data use and how to advertise."
+  }
+ },
+ "NAV9": [
+  [
+   "Shailaputri",
+   "Orange",
+   "#f97316"
+  ],
+  [
+   "Brahmacharini",
+   "White",
+   "#f1f5f9"
+  ],
+  [
+   "Chandraghanta",
+   "Red",
+   "#dc2626"
+  ],
+  [
+   "Kushmanda",
+   "Royal Blue",
+   "#1d4ed8"
+  ],
+  [
+   "Skandamata",
+   "Yellow",
+   "#facc15"
+  ],
+  [
+   "Katyayani",
+   "Green",
+   "#16a34a"
+  ],
+  [
+   "Kalaratri",
+   "Grey",
+   "#6b7280"
+  ],
+  [
+   "Mahagauri",
+   "Purple",
+   "#7e22ce"
+  ],
+  [
+   "Siddhidatri",
+   "Peacock Green",
+   "#0f766e"
+  ]
+ ],
+ "BWU": "https://www.blinkwear.in/products?type=rent&utm_source=puneganpatilive&utm_medium=referral&utm_campaign=",
+ "ORG": [
+  {
+   "@type": "Organization",
+   "@id": "https://www.puneganpatilive.in/#org",
+   "name": "Pune Ganpati LIVE",
+   "url": "https://www.puneganpatilive.in/",
+   "email": "shubhamshri.1110@gmail.com",
+   "areaServed": {
+    "@type": "City",
+    "name": "Pune",
+    "geo": {
+     "@type": "GeoCoordinates",
+     "latitude": 18.5204,
+     "longitude": 73.8567
+    }
+   }
+  },
+  {
+   "@type": "WebSite",
+   "@id": "https://www.puneganpatilive.in/#web",
+   "url": "https://www.puneganpatilive.in/",
+   "name": "Pune Ganpati LIVE",
+   "inLanguage": [
+    "en-IN",
+    "mr-IN",
+    "hi-IN"
+   ],
+   "publisher": {
+    "@id": "https://www.puneganpatilive.in/#org"
+   }
+  }
+ ],
+ "GP": {
+  "t": "Pune Ganpati Mandals: Live Crowd, Map, Metro Routes & Darshan Timing",
+  "d": "Guide to 22 Pune Ganpati mandals with coordinates, live crowd reports, metro and parking, and emergency helplines. Plan your Ganeshotsav darshan.",
+  "h1": "Pune Ganpati mandal guide",
+  "q": "Pune Ganpati LIVE maps 22 Ganpati mandals in Pune with timings, nearest metro, parking, community crowd reports and emergency helplines."
+ },
+ "MANDALS": [
+  {
+   "id": "kasba-ganpati",
+   "name": "Kasba Ganpati",
+   "area": "Kasba Peth",
+   "cat": "Manache Paach"
+  },
+  {
+   "id": "tambdi-jogeshwari",
+   "name": "Tambdi Jogeshwari Ganpati",
+   "area": "Budhwar Peth",
+   "cat": "Manache Paach"
+  },
+  {
+   "id": "guruji-talim",
+   "name": "Guruji Talim Ganpati",
+   "area": "Laxmi Road",
+   "cat": "Manache Paach"
+  },
+  {
+   "id": "tulshibaug-ganpati",
+   "name": "Tulshibaug Ganpati",
+   "area": "Tulshibaug, Budhwar Peth",
+   "cat": "Manache Paach"
+  },
+  {
+   "id": "kesariwada-ganpati",
+   "name": "Kesariwada Ganpati",
+   "area": "Narayan Peth",
+   "cat": "Manache Paach"
+  },
+  {
+   "id": "dagdusheth-ganpati",
+   "name": "Shrimant Dagdusheth Halwai Ganpati",
+   "area": "Budhwar Peth",
+   "cat": "Prominent Grand Mandal"
+  },
+  {
+   "id": "bhausaheb-rangari",
+   "name": "Shrimant Bhausaheb Rangari Ganpati",
+   "area": "Budhwar Peth",
+   "cat": "Historic Pioneer"
+  },
+  {
+   "id": "akhil-mandai",
+   "name": "Akhil Mandai Ganpati",
+   "area": "Mandai, Shukrawar Peth",
+   "cat": "Prominent Grand Mandal"
+  },
+  {
+   "id": "babu-genu",
+   "name": "Hutatma Babu Genu Ganpati",
+   "area": "Budhwar Peth",
+   "cat": "Prominent Grand Mandal"
+  },
+  {
+   "id": "natu-baug",
+   "name": "Natu Baug Ganpati",
+   "area": "Sadashiv Peth",
+   "cat": "Historic Peth Mandal"
+  },
+  {
+   "id": "hathi-ganpati",
+   "name": "Hathi Ganpati Mandal",
+   "area": "Sadashiv Peth",
+   "cat": "Historic Peth Mandal"
+  },
+  {
+   "id": "chimnya-ganpati",
+   "name": "Chimnya Ganpati",
+   "area": "Sadashiv Peth",
+   "cat": "Historic Peth Mandal"
+  },
+  {
+   "id": "nimbalkar-talim",
+   "name": "Nimbalkar Talim Ganpati",
+   "area": "Sadashiv Peth",
+   "cat": "Historic Peth Mandal"
+  },
+  {
+   "id": "nagarkar-talim",
+   "name": "Nagarkar Talim Ganpati",
+   "area": "Budhwar Peth",
+   "cat": "Historic Peth Mandal"
+  },
+  {
+   "id": "jilbya-maruti",
+   "name": "Jilbya Maruti Ganpati",
+   "area": "Budhwar Peth",
+   "cat": "Historic Peth Mandal"
+  },
+  {
+   "id": "garud-ganpati",
+   "name": "Garud Ganpati",
+   "area": "Laxmi Road",
+   "cat": "Historic Peth Mandal"
+  },
+  {
+   "id": "mati-ganpati",
+   "name": "Mati Ganpati",
+   "area": "Narayan Peth",
+   "cat": "Eco-Friendly Heritage"
+  },
+  {
+   "id": "hirabaug-ganpati",
+   "name": "Hirabaug Ganpati",
+   "area": "Tilak Road",
+   "cat": "Prominent Grand Mandal"
+  },
+  {
+   "id": "shanipar-ganpati",
+   "name": "Shanipar Ganpati Mandal",
+   "area": "Sadashiv Peth",
+   "cat": "Historic Peth Mandal"
+  },
+  {
+   "id": "khadakmal-ali",
+   "name": "Khadakmal Ali Ganpati",
+   "area": "Ghorpade Peth",
+   "cat": "Historic Peth Mandal"
+  },
+  {
+   "id": "akra-maruti",
+   "name": "Akra Maruti Ganpati",
+   "area": "Shukrawar Peth",
+   "cat": "Historic Peth Mandal"
+  },
+  {
+   "id": "sanyukta-prasad",
+   "name": "Sanyukta Prasad Mitra Mandal",
+   "area": "Budhwar Peth",
+   "cat": "Prominent Grand Mandal"
+  }
+ ]
+}
