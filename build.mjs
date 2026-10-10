@@ -90,13 +90,13 @@ function layout(p, title, desc, body, graph, o = {}) {
 <title>${esc(title)}</title><meta name="description" content="${esc(desc)}"><link rel="canonical" href="${url}"><meta name="robots" content="${robots}">
 <meta property="og:type" content="website"><meta property="og:site_name" content="Pune Ganpati LIVE"><meta property="og:title" content="${esc(title)}"><meta property="og:description" content="${esc(desc)}"><meta property="og:url" content="${url}"><meta property="og:locale" content="en_IN">${o.image ? `<meta property="og:image" content="${esc(o.image)}"><meta name="twitter:card" content="summary_large_image">` : '<meta name="twitter:card" content="summary">'}<meta name="theme-color" content="#1b1740">${GEO}
 <link rel="alternate" type="text/plain" href="/llms.txt"><link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800;900&family=Noto+Sans+Devanagari:wght@400;700&display=swap" rel="stylesheet"><link rel="stylesheet" href="/assets/site.css">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800;900&family=Noto+Sans+Devanagari:wght@400;700&display=swap" rel="stylesheet"><link rel="stylesheet" href="/assets/site.css?v=${TODAY}-5">
 <script type="application/ld+json">${sch}</script></head><body${o.sticky ? ' class="hs"' : ''}>
 <header class="hd"><div class="wrap"><a class="brand" href="/">Pune Ganpati LIVE<small>EVENTS, FESTIVALS AND PASSES</small></a><nav aria-label="Main">${nav}</nav><a class="btn sm" href="/list-your-event">List your event</a></div></header>
 <main>${body}</main>
 ${o.sbar || ''}<footer><div class="wrap"><div class="cols"><div><h4>Cities</h4><ul>${cities}</ul></div><div><h4>Explore</h4><ul><li><a href="/events">All events</a></li>${HASSHOP ? '<li><a href="/shop">Shop</a></li>' : ''}<li><a href="/navratri">Navratri 2026</a></li><li><a href="/diwali">Diwali 2026</a></li><li><a href="/ganpati">Ganpati mandal guide</a></li></ul></div><div><h4>Site</h4><ul><li><a href="/list-your-event">List your event</a></li><li><a href="/policies">Terms, refunds and shipping</a></li><li><a href="/about">About, privacy, advertise</a></li><li><a href="mailto:${esc(EMAIL)}">${esc(EMAIL)}</a></li></ul></div></div>
 <p style="margin-top:20px">Some links are sponsored or affiliate links and are marked. Event details come from organisers; confirm before travelling. © 2026 Pune Ganpati LIVE.</p></div></footer>
-<script src="/assets/site.js" defer></script></body></html>`;
+<script src="/assets/site.js?v=${TODAY}-5" defer></script></body></html>`;
 }
 const evCard = (e, city) => {
   const d = pd(e.start_date), place = [e.venue, e.area].filter(Boolean).join(', '), q = [e.title, e.venue, e.area, CATS[e.category], cityName(e.city)].join(' ').toLowerCase();
