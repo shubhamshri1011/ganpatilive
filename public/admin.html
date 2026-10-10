@@ -102,12 +102,13 @@ async function requestsView() {
     const rows = all.filter(r => r.status === 'pending').sort((a, b) => (b.createdAt?.seconds || 0) - (a.createdAt?.seconds || 0));
     $('#rc').textContent = rows.length ? '(' + rows.length + ')' : '';
     const wa = c => { const n = String(c || '').replace(/\D/g, ''); return n.length >= 10 ? 'https://wa.me/' + (n.length === 10 ? '91' + n : n) : ''; };
-    $('#v').innerHTML = `<div class="panel"><h2>Listing requests (${rows.length} pending)</h2><div class="help">Approve publishes the event right away (then press <b>Publish site</b>). You can edit it later in the Events tab. Reject hides the request.</div>${rows.length ? rows.map(r => `<div class="panel" style="margin:10px 0">
+    $('#v').innerHTML = `<div class="panel"><h2>Listing requests (${rows.length} pending)</h2><div class="help">Approve publishes the event right away (then press <b>Publish site</b>). You can edit it later in the Events tab. Reject hides the request.</div>${all.some(r => r.status !== 'pending') ? `<button class="btn sm alt" id="clr">Clear ${all.filter(r => r.status !== 'pending').length} handled (approved/rejected) requests</button>` : ''}${rows.length ? rows.map(r => `<div class="panel" style="margin:10px 0">
       <div style="display:flex;gap:14px;flex-wrap:wrap">${r.image_data || r.image_url ? `<img src="${esc(r.image_data || r.image_url)}" alt="" style="width:120px;height:120px;object-fit:cover;border-radius:10px">` : ''}
       <div style="flex:1;min-width:220px"><b>${esc(r.title)}</b><div class="meta">${esc(CITIES[r.city] || r.city)} | ${esc(CATS[r.category] || r.category)} | ${esc(r.start_date)}${r.end_date && r.end_date !== r.start_date ? ' to ' + esc(r.end_date) : ''} ${esc(r.start_time || '')}</div>
       <div class="meta">${esc(r.venue)}${r.area ? ', ' + esc(r.area) : ''}</div><div class="meta">Passes: ${esc(r.passes_text || 'none (free)')}</div>
       <p style="margin:6px 0">${esc(r.description || '')}</p><div class="meta">Organiser: ${esc(r.organizer || '-')} | Contact: ${wa(r.contact) ? `<a href="${wa(r.contact)}" target="_blank" rel="noopener">${esc(r.contact)}</a>` : esc(r.contact)}</div></div></div>
       <div class="row" style="margin-top:10px"><button class="btn sf sm" data-ok="${r.id}">Approve and publish</button><button class="btn alt sm" data-no="${r.id}">Reject</button></div></div>`).join('') : '<p class="meta">No pending requests.</p>'}</div>`;
+    if ($('#clr')) $('#clr').onclick = async () => { const h = all.filter(r => r.status !== 'pending'); if (!confirm('Delete ' + h.length + ' handled requests? Approved events are not affected.')) return; try { await Promise.all(h.map(r => deleteDoc(doc(db, 'submissions', r.id)))); toast('Cleared.'); requestsView(); } catch (e) { toast('Failed: ' + (e.code || e.message)); } };
     document.querySelectorAll('[data-ok]').forEach(b => b.onclick = async () => {
       const r = { ...rows.find(x => x.id === b.dataset.ok) }; b.disabled = true;
       const key = (map, v) => { v = String(v || '').trim(); const l = v.toLowerCase(); return Object.keys(map).find(k => k === l || String(map[k]).toLowerCase() === l) || ''; };
@@ -123,15 +124,54 @@ async function requestsView() {
     document.querySelectorAll('[data-no]').forEach(b => b.onclick = async () => { if (!confirm('Reject this request?')) return; try { await updateDoc(doc(db, 'submissions', b.dataset.no), { status: 'rejected' }); toast('Rejected.'); requestsView(); } catch (e) { toast('Failed: ' + (e.code || e.message)); } });
   } catch (e) { denied(e); }
 }
+let flt = { q: '', st: 'all', city: '', cat: '' }, seedInfo = null;
+const todayIST = () => new Date(Date.now() + 5.5 * 3600e3).toISOString().slice(0, 10);
+async function getSeed() {
+  if (seedInfo) return seedInfo; seedInfo = { done: false, events: [], products: [] };
+  try { const st = (await getDoc(doc(db, 'settings', 'site'))).data() || {}; seedInfo.done = st.seedImported === true; } catch { }
+  try { const r = await fetch('/admin-seed.json?' + Date.now()); if (r.ok) { const j = await r.json(); seedInfo.events = j.events || []; seedInfo.products = j.products || []; } } catch { }
+  return seedInfo;
+}
 async function listView(kind) {
   $('#v').innerHTML = '<p class="meta">Loading...</p>';
   try {
-    const s = await getDocs(collection(db, kind)); const rows = s.docs.map(d => ({ id: d.id, ...d.data() })).sort((a, b) => String(b.start_date || b.title).localeCompare(String(a.start_date || a.title)));
-    $('#v').innerHTML = `<div class="panel"><div style="display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap"><h2>${kind === 'events' ? 'Events' : 'Products'} (${rows.length})</h2><button class="btn sf" id="new">+ New ${kind === 'events' ? 'event' : 'product'}</button></div>
-    <div style="overflow-x:auto"><table><thead><tr><th>${kind === 'events' ? 'Event' : 'Product'}</th><th>${kind === 'events' ? 'Date' : 'Price'}</th><th>Status</th><th></th></tr></thead><tbody>${rows.map(r => `<tr><td><b>${esc(r.title)}</b><div class="meta">${esc(kind === 'events' ? (CITIES[r.city] || r.city) + ', ' + (CATS[r.category] || r.category) : r.category || '')}</div></td><td>${esc(kind === 'events' ? r.start_date : 'Rs ' + r.price)}</td><td class="${r.published ? 'live' : 'draft'}">${r.published ? 'Live' : 'Draft'}</td><td style="white-space:nowrap"><button class="btn sm alt" data-e="${esc(r.id)}">Edit</button><button class="btn sm alt" data-x="${esc(r.id)}">Delete</button></td></tr>`).join('') || '<tr><td colspan="4" class="meta">Nothing yet. Click New.</td></tr>'}</tbody></table></div></div>`;
+    const isEv = kind === 'events', T = todayIST(), seed = await getSeed();
+    const s = await getDocs(collection(db, kind)); const all = s.docs.map(d => ({ id: d.id, ...d.data() })).sort((a, b) => String(b.start_date || b.title).localeCompare(String(a.start_date || a.title)));
+    const ended = r => isEv && (r.end_date || r.start_date) < T;
+    const statusOf = r => ended(r) ? 'ended' : r.published ? 'live' : 'draft';
+    const rows = all.filter(r => (!flt.q || (r.title + ' ' + (r.venue || '') + ' ' + (r.area || '')).toLowerCase().includes(flt.q.toLowerCase())) && (flt.st === 'all' || statusOf(r) === flt.st) && (!isEv || ((!flt.city || r.city === flt.city) && (!flt.cat || r.category === flt.cat))));
+    const sd = isEv ? seed.events : seed.products, showSeed = !seed.done && sd.length > 0;
+    const opts = (m, v) => `<option value="">All</option>` + Object.entries(m).map(([k, n]) => `<option value="${k}"${k === v ? ' selected' : ''}>${n}</option>`).join('');
+    const cnt = { live: all.filter(r => statusOf(r) === 'live').length, draft: all.filter(r => statusOf(r) === 'draft').length, ended: all.filter(ended).length };
+    $('#v').innerHTML = `<div class="panel"><div style="display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap"><h2>${isEv ? 'Events' : 'Products'} (${all.length}) <span class="meta">Live ${cnt.live} | Draft ${cnt.draft}${isEv ? ' | Ended ' + cnt.ended : ''}</span></h2><button class="btn sf" id="new">+ New ${isEv ? 'event' : 'product'}</button></div>
+    ${showSeed ? `<div class="help" style="margin-top:10px"><b>${sd.length} starter ${isEv ? 'events' : 'products'} are built into the website code</b> (${esc(sd.slice(0, 3).map(x => x.title).join(', '))}${sd.length > 3 ? '...' : ''}). They cannot be edited or deleted from here until you take them over. <button class="btn sm" id="seed">Take over starter data</button> After that you can edit, hide or delete them like any other ${isEv ? 'event' : 'product'}.</div>` : ''}
+    <div class="row" style="margin:10px 0;gap:8px;flex-wrap:wrap"><input type="search" id="fq" placeholder="Search title, venue, area" value="${esc(flt.q)}" style="flex:1;min-width:160px;padding:9px 12px;border:1px solid var(--line,#ddd);border-radius:10px">
+      <select id="fs"><option value="all">All status</option><option value="live"${flt.st === 'live' ? ' selected' : ''}>Live</option><option value="draft"${flt.st === 'draft' ? ' selected' : ''}>Draft (hidden)</option>${isEv ? `<option value="ended"${flt.st === 'ended' ? ' selected' : ''}>Ended</option>` : ''}</select>
+      ${isEv ? `<select id="fc">${opts(CITIES, flt.city)}</select><select id="fk">${opts(CATS, flt.cat)}</select>` : ''}</div>
+    <div class="row" style="margin-bottom:8px;gap:8px;flex-wrap:wrap;align-items:center"><span class="meta" id="sel">0 selected</span><button class="btn sm alt" data-bulk="pub">Publish</button><button class="btn sm alt" data-bulk="unpub">Hide (unpublish)</button><button class="btn sm alt" data-bulk="del" style="color:#b91c1c">Delete selected</button>${isEv && cnt.ended ? `<button class="btn sm alt" id="delEnded" style="color:#b91c1c">Delete all ended (${cnt.ended})</button>` : ''}</div>
+    <div style="overflow-x:auto"><table><thead><tr><th><input type="checkbox" id="all" aria-label="Select all shown"></th><th>${isEv ? 'Event' : 'Product'}</th><th>${isEv ? 'Date' : 'Price'}</th><th>Status</th><th></th></tr></thead><tbody>${rows.map(r => `<tr><td><input type="checkbox" class="ck" value="${esc(r.id)}"></td><td><b>${esc(r.title)}</b><div class="meta">${esc(isEv ? (CITIES[r.city] || r.city) + ', ' + (CATS[r.category] || r.category) + (r.venue ? ' | ' + r.venue : '') : r.category || '')}</div></td><td>${esc(isEv ? r.start_date + (r.end_date && r.end_date !== r.start_date ? ' to ' + r.end_date : '') : 'Rs ' + r.price)}</td><td class="${statusOf(r) === 'live' ? 'live' : 'draft'}">${statusOf(r) === 'live' ? 'Live' : statusOf(r) === 'ended' ? 'Ended' : 'Hidden'}</td><td style="white-space:nowrap"><button class="btn sm alt" data-e="${esc(r.id)}">Edit</button> <button class="btn sm alt" data-x="${esc(r.id)}">Delete</button></td></tr>`).join('') || `<tr><td colspan="5" class="meta">${all.length ? 'Nothing matches the filters.' : 'Nothing yet. Click New or use Quick add.'}</td></tr>`}</tbody></table></div>
+    <p class="meta">After deleting or hiding, press <b>Publish site</b> so the website updates.</p></div>`;
     $('#new').onclick = () => formView(kind, null);
-    document.querySelectorAll('[data-e]').forEach(b => b.onclick = () => formView(kind, rows.find(r => r.id === b.dataset.e)));
-    document.querySelectorAll('[data-x]').forEach(b => b.onclick = async () => { if (confirm('Delete permanently? (To hide it instead, edit and untick Published.)')) { await deleteDoc(doc(db, kind, b.dataset.x)); toast('Deleted. Press Publish site.'); listView(kind); } });
+    if ($('#seed')) $('#seed').onclick = async e => {
+      if (!confirm('Move the ' + sd.length + ' starter items into this panel? They stay live until you hide or delete them.')) return; e.target.disabled = true;
+      try { for (const it of sd) { const ref = doc(db, kind, it.id); if (!(await getDoc(ref)).exists()) await setDoc(ref, { ...it, published: it.published !== false, updatedAt: serverTimestamp() }); } const o = {}; if (isEv) o.seedImported = true; await setDoc(doc(db, 'settings', 'site'), { seedImported: true }, { merge: true }); seedInfo.done = true; toast('Done. You can now edit or delete them.', 5000); listView(kind); } catch (er) { e.target.disabled = false; toast('Failed: ' + (er.code || er.message)); }
+    };
+    const rerun = () => listView(kind);
+    $('#fq').oninput = e => { flt.q = e.target.value; clearTimeout(rerun.t); rerun.t = setTimeout(() => { rerun(); setTimeout(() => { const i = $('#fq'); i.focus(); i.setSelectionRange(i.value.length, i.value.length); }, 80); }, 350); };
+    $('#fs').onchange = e => { flt.st = e.target.value; rerun(); };
+    if (isEv) { $('#fc').onchange = e => { flt.city = e.target.value; rerun(); }; $('#fk').onchange = e => { flt.cat = e.target.value; rerun(); }; }
+    const cks = () => [...document.querySelectorAll('.ck')], picked = () => cks().filter(c => c.checked).map(c => c.value);
+    const upd = () => { $('#sel').textContent = picked().length + ' selected'; };
+    cks().forEach(c => c.onchange = upd); $('#all').onchange = e => { cks().forEach(c => c.checked = e.target.checked); upd(); };
+    const bulk = async (ids, act) => {
+      if (!ids.length) return toast('Select at least one row first.');
+      if (act === 'del' && !confirm('Delete ' + ids.length + ' ' + kind + ' permanently? This cannot be undone. (To just hide them, use "Hide".)')) return;
+      try { await Promise.all(ids.map(id => act === 'del' ? deleteDoc(doc(db, kind, id)) : updateDoc(doc(db, kind, id), { published: act === 'pub', updatedAt: serverTimestamp() }))); toast((act === 'del' ? 'Deleted ' : act === 'pub' ? 'Published ' : 'Hidden ') + ids.length + '. Press Publish site.', 5000); listView(kind); } catch (er) { toast('Failed: ' + (er.code || er.message)); }
+    };
+    document.querySelectorAll('[data-bulk]').forEach(b => b.onclick = () => bulk(picked(), b.dataset.bulk));
+    if ($('#delEnded')) $('#delEnded').onclick = () => bulk(all.filter(ended).map(r => r.id), 'del');
+    document.querySelectorAll('[data-e]').forEach(b => b.onclick = () => formView(kind, all.find(r => r.id === b.dataset.e)));
+    document.querySelectorAll('[data-x]').forEach(b => b.onclick = () => bulk([b.dataset.x], 'del'));
   } catch (e) { denied(e); }
 }
 function formView(kind, d) {
@@ -177,6 +217,6 @@ async function settingsView() {
   <div class="help" style="grid-column:1/-1">If a pass or product has no payment link, the Buy button opens a WhatsApp chat on this number with the order message filled in.</div>
   <div class="row" style="grid-column:1/-1"><button class="btn sf lg">Save settings</button><button type="button" class="btn alt lg" id="hk">Change deploy hook</button></div></form>`;
   $('#hk').onclick = () => { const h = prompt('Vercel Deploy Hook URL:', localStorage.getItem('deployHook') || ''); if (h !== null) localStorage.setItem('deployHook', h.trim()); };
-  $('#sf').onsubmit = async e => { e.preventDefault(); const f = new FormData(e.target); try { await setDoc(doc(db, 'settings', 'site'), { whatsapp: String(f.get('whatsapp') || '').replace(/\D/g, ''), email: String(f.get('email') || '').trim() }); toast('Saved. Press Publish site.', 5000); } catch (er) { toast('Save failed: ' + er.code); } };
+  $('#sf').onsubmit = async e => { e.preventDefault(); const f = new FormData(e.target); try { await setDoc(doc(db, 'settings', 'site'), { whatsapp: String(f.get('whatsapp') || '').replace(/\D/g, ''), email: String(f.get('email') || '').trim() }, { merge: true }); toast('Saved. Press Publish site.', 5000); } catch (er) { toast('Save failed: ' + er.code); } };
 }
 </script></body></html>

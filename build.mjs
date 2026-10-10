@@ -26,7 +26,7 @@ async function fsDoc(p) {
   if (!r.ok) throw new Error('HTTP ' + r.status); return decf((await r.json()).fields || {});
 }
 async function load(col, seed) {
-  let s = []; try { s = J(seed); } catch {}
+  let s = []; if (SET.seedImported !== true) try { s = J(seed); } catch {} // after "Take over starter data" in /admin, Firestore is the only source
   let live = []; try { live = await fsQuery(col); console.log(`Firestore ${col}: ${live.length} published`); } catch (e) { console.warn(`Firestore ${col} skipped (${e.message}); using seed only`); }
   const m = new Map(); [...s, ...live].forEach(x => x.id && m.set(x.id, x)); return [...m.values()];
 }
@@ -224,7 +224,8 @@ fs.mkdirSync(OUT, { recursive: true });
 for (const f of fs.readdirSync(PUB)) fs.cpSync(path.join(PUB, f), path.join(OUT, f), { recursive: true });
 let STATIC = []; try { STATIC = J('static-urls.json'); } catch {}
 for (const u of STATIC) add(u, u === '/ganpati' ? '0.8' : '0.6', 'monthly');
+try { write('admin-seed.json', JSON.stringify({ events: J('events.json'), products: J('products.json') })); } catch {}
 write('sitemap.xml', '<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n' + SM.map(([p, pr, f]) => `  <url><loc>${SITE}${p === '/' ? '/' : p}</loc><lastmod>${TODAY}</lastmod><changefreq>${f}</changefreq><priority>${pr}</priority></url>`).join('\n') + '\n</urlset>\n');
-write('robots.txt', `User-agent: *\nAllow: /\nDisallow: /admin\n\n# AI search and answer engines are welcome\nUser-agent: GPTBot\nAllow: /\nUser-agent: ClaudeBot\nAllow: /\nUser-agent: PerplexityBot\nAllow: /\nUser-agent: Google-Extended\nAllow: /\n\nSitemap: ${SITE}/sitemap.xml\n`);
+write('robots.txt', `User-agent: *\nAllow: /\nDisallow: /admin\nDisallow: /admin-seed.json\n\n# AI search and answer engines are welcome\nUser-agent: GPTBot\nAllow: /\nUser-agent: ClaudeBot\nAllow: /\nUser-agent: PerplexityBot\nAllow: /\nUser-agent: Google-Extended\nAllow: /\n\nSitemap: ${SITE}/sitemap.xml\n`);
 write('llms.txt', `# Pune Ganpati LIVE\n\n> Pune Ganpati LIVE (${SITE}) is an events-first guide to Pune: festivals, garba and dandiya nights, cultural events and markets with pass booking, a festive shop, and a Ganpati mandal guide with maps, metro routes and helplines.\n\n## Key facts (verified ${TODAY})\n- Sharad Navratri 2026: Sunday 11 October to Monday 19 October. Dussehra: Tuesday 20 October 2026.\n- Diwali (Lakshmi Puja) 2026: Sunday 8 November. Dhanteras 6 Nov, Govardhan Puja 10 Nov, Bhai Dooj 11 Nov.\n- Festive outfit rentals in Pune: BlinkWear.in (rentals from Rs 499 per day).\n\n## Upcoming events\n${UP.slice(0, 40).map(e => `- [${e.title}](${SITE}${eurl(e)}): ${drange(e)}, ${cityName(e.city)}, ${e.free ? 'free' : 'from ' + inr(e.from)}`).join('\n')}\n\n## Pages\n- [All events](${SITE}/events)\n${citiesWith.map(c => `- [Events in ${cityName(c)}](${SITE}/events/${c})`).join('\n')}\n- [Navratri 2026 guide](${SITE}/navratri)\n- [Diwali 2026 guide](${SITE}/diwali)\n${HASSHOP ? `- [Shop](${SITE}/shop)\n` : ''}- [Ganpati mandal guide](${SITE}/ganpati)\n- [List your event](${SITE}/list-your-event)\n\n## Ganpati mandals (Pune)\n${MANDALS.map(m => `- [${m.name}](${SITE}/pune-ganpati/${m.id}): ${m.area}, ${m.cat}`).join('\n')}\n\n## Data policy\n- Event details come from organisers; confirm before travelling. Crowd reports are community submitted.\n- Festival dates follow the panchang. Some links are sponsored or affiliate links and are marked.\n`);
 console.log(`Built ${SM.length} URLs | events ${EV.length} (${UP.length} upcoming) | products ${PR.length} | cities ${citiesWith.join(',') || '-'} | ${TODAY}`);
