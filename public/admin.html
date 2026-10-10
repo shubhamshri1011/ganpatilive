@@ -40,7 +40,7 @@ $('#pub').onclick = async () => {
   if (!h) { h = prompt('Paste your Vercel Deploy Hook URL (Vercel > Settings > Git > Deploy Hooks):'); if (!h) return; localStorage.setItem('deployHook', h.trim()); }
   try { await fetch(h, { method: 'POST', mode: 'no-cors' }); toast('Publishing started. Live site updates in about a minute.', 6000); } catch (e) { toast('Could not call the hook. Check the URL.'); localStorage.removeItem('deployHook'); }
 };
-onAuthStateChanged(auth, u => { const on = !!u; $('#login').hidden = on; $('#app').hidden = !on; $('#out').hidden = !on; $('#pub').hidden = !on; $('#who').textContent = u ? u.email : ''; if (on) show(); });
+onAuthStateChanged(auth, u => { const on = !!u; $('#login').hidden = on; $('#app').hidden = !on; $('#out').hidden = !on; $('#pub').hidden = !on; $('#who').textContent = u ? u.email : ''; if (on) { show(); pendingCount(); } });
 document.querySelectorAll('.tabs button').forEach(b => b.onclick = () => { tab = b.dataset.t; document.querySelectorAll('.tabs button').forEach(x => x.setAttribute('aria-selected', x === b)); show(); });
 const show = () => ({ quick: quickView, requests: requestsView, events: listView, products: listView, bulk: bulkView, settings: settingsView })[tab](tab);
 const denied = e => { $('#v').innerHTML = `<div class="panel"><b>${e.code === 'permission-denied' ? 'This Google account is not allowed.' : 'Error: ' + esc(e.message)}</b><p class="meta">Sign in with the owner account and make sure the Firestore rules from README are published.</p></div>`; };
@@ -95,33 +95,57 @@ function quickView() {
   };
 }
 // ---------- requests (public "List your event" form) ----------
+let rq = 'pending';
+const fmtT = t => t?.seconds ? new Date(t.seconds * 1000).toLocaleString('en-IN', { dateStyle: 'medium', timeStyle: 'short' }) : '';
+async function pendingCount() { try { const sn = await getDocs(collection(db, 'submissions')); const n = sn.docs.filter(d => d.data().status === 'pending').length; $('#rc').textContent = n ? '(' + n + ')' : ''; } catch { } }
 async function requestsView() {
   $('#v').innerHTML = '<p class="meta">Loading...</p>';
   try {
     const snap = await getDocs(collection(db, 'submissions')); const all = snap.docs.map(d => ({ id: d.id, ...d.data() }));
-    const rows = all.filter(r => r.status === 'pending').sort((a, b) => (b.createdAt?.seconds || 0) - (a.createdAt?.seconds || 0));
-    $('#rc').textContent = rows.length ? '(' + rows.length + ')' : '';
-    const wa = c => { const n = String(c || '').replace(/\D/g, ''); return n.length >= 10 ? 'https://wa.me/' + (n.length === 10 ? '91' + n : n) : ''; };
-    $('#v').innerHTML = `<div class="panel"><h2>Listing requests (${rows.length} pending)</h2><div class="help">Approve publishes the event right away (then press <b>Publish site</b>). You can edit it later in the Events tab. Reject hides the request.</div>${all.some(r => r.status !== 'pending') ? `<button class="btn sm alt" id="clr">Clear ${all.filter(r => r.status !== 'pending').length} handled (approved/rejected) requests</button>` : ''}${rows.length ? rows.map(r => `<div class="panel" style="margin:10px 0">
-      <div style="display:flex;gap:14px;flex-wrap:wrap">${r.image_data || r.image_url ? `<img src="${esc(r.image_data || r.image_url)}" alt="" style="width:120px;height:120px;object-fit:cover;border-radius:10px">` : ''}
-      <div style="flex:1;min-width:220px"><b>${esc(r.title)}</b><div class="meta">${esc(CITIES[r.city] || r.city)} | ${esc(CATS[r.category] || r.category)} | ${esc(r.start_date)}${r.end_date && r.end_date !== r.start_date ? ' to ' + esc(r.end_date) : ''} ${esc(r.start_time || '')}</div>
-      <div class="meta">${esc(r.venue)}${r.area ? ', ' + esc(r.area) : ''}</div><div class="meta">Passes: ${esc(r.passes_text || 'none (free)')}</div>
-      <p style="margin:6px 0">${esc(r.description || '')}</p><div class="meta">Organiser: ${esc(r.organizer || '-')} | Contact: ${wa(r.contact) ? `<a href="${wa(r.contact)}" target="_blank" rel="noopener">${esc(r.contact)}</a>` : esc(r.contact)}</div></div></div>
-      <div class="row" style="margin-top:10px"><button class="btn sf sm" data-ok="${r.id}">Approve and publish</button><button class="btn alt sm" data-no="${r.id}">Reject</button></div></div>`).join('') : '<p class="meta">No pending requests.</p>'}</div>`;
-    if ($('#clr')) $('#clr').onclick = async () => { const h = all.filter(r => r.status !== 'pending'); if (!confirm('Delete ' + h.length + ' handled requests? Approved events are not affected.')) return; try { await Promise.all(h.map(r => deleteDoc(doc(db, 'submissions', r.id)))); toast('Cleared.'); requestsView(); } catch (e) { toast('Failed: ' + (e.code || e.message)); } };
+    const by = st => all.filter(r => (r.status || 'pending') === st), n = { pending: by('pending').length, approved: by('approved').length, rejected: by('rejected').length, withdrawn: by('withdrawn').length, all: all.length };
+    $('#rc').textContent = n.pending ? '(' + n.pending + ')' : '';
+    const rows = (rq === 'all' ? all : by(rq)).sort((a, b) => ((b.handledAt || b.updatedAt || b.createdAt)?.seconds || 0) - ((a.handledAt || a.updatedAt || a.createdAt)?.seconds || 0));
+    const wa = c => { const x = String(c || '').replace(/\D/g, ''); return x.length >= 10 ? 'https://wa.me/' + (x.length === 10 ? '91' + x : x) : ''; };
+    const lab = { pending: 'Pending', approved: 'Approved', rejected: 'Rejected', withdrawn: 'Taken down by owner', all: 'All' };
+    const col = { pending: '#b45309', approved: '#15803d', rejected: '#b91c1c', withdrawn: '#6b7280' };
+    $('#v').innerHTML = `<div class="panel"><h2>Listing requests</h2>
+    <div class="row" style="gap:6px;flex-wrap:wrap;margin:8px 0">${['pending', 'approved', 'rejected', 'withdrawn', 'all'].map(k => `<button class="btn sm ${rq === k ? 'sf' : 'alt'}" data-rq="${k}">${lab[k]} (${n[k]})</button>`).join('')}</div>
+    <div class="help">Approve publishes the event (then press <b>Publish site</b>). If the organiser edited an already approved event, approving updates the same event. Everything you approved or rejected stays here as history.</div>
+    ${all.some(r => r.status === 'approved' || r.status === 'rejected') && (rq === 'approved' || rq === 'rejected') ? `<button class="btn sm alt" id="clr" style="color:#b91c1c">Delete all ${rows.length} ${rq} records</button>` : ''}
+    ${rows.length ? rows.map(r => { const st = r.status || 'pending'; return `<div class="panel" style="margin:10px 0">
+      <div style="display:flex;gap:14px;flex-wrap:wrap">${r.image_data || r.image_url ? `<img src="${esc(r.image_data || r.image_url)}" alt="" style="width:110px;height:110px;object-fit:cover;border-radius:10px">` : ''}
+      <div style="flex:1;min-width:220px"><b>${esc(r.title)}</b> <span style="color:${col[st] || '#444'};font-weight:800">${esc(lab[st] || st)}</span>${st === 'pending' && r.eventId ? ' <span class="meta">(edit of a live event)</span>' : ''}
+      <div class="meta">${esc(CITIES[r.city] || r.city)} | ${esc(CATS[r.category] || r.category)} | ${esc(r.start_date)}${r.end_date && r.end_date !== r.start_date ? ' to ' + esc(r.end_date) : ''} ${esc(r.start_time || '')}</div>
+      <div class="meta">${esc(r.venue)}${r.area ? ', ' + esc(r.area) : ''} | Passes: ${esc(r.passes_text || 'none (free)')}</div>
+      ${st === 'pending' ? `<p style="margin:6px 0">${esc(r.description || '')}</p>` : ''}
+      <div class="meta">Organiser: ${esc(r.organizer || '-')} | Contact: ${wa(r.contact) ? `<a href="${wa(r.contact)}" target="_blank" rel="noopener">${esc(r.contact)}</a>` : esc(r.contact)} | Account: ${r.ownerEmail ? esc(r.ownerEmail) : 'no sign-in (anonymous)'}</div>
+      <div class="meta">Submitted ${esc(fmtT(r.createdAt))}${r.handledAt ? ' | Decision ' + esc(fmtT(r.handledAt)) : ''}${r.adminNote ? ' | Reason: ' + esc(r.adminNote) : ''}${r.eventId ? ' | Event id: ' + esc(r.eventId) : ''}</div></div></div>
+      <div class="row" style="margin-top:10px;gap:8px;flex-wrap:wrap">${st !== 'approved' && st !== 'withdrawn' ? `<button class="btn sf sm" data-ok="${r.id}">${st === 'rejected' ? 'Approve anyway' : r.eventId ? 'Approve changes' : 'Approve and publish'}</button>` : ''}${st === 'pending' ? `<button class="btn alt sm" data-no="${r.id}">Reject</button>` : ''}${st === 'rejected' ? `<button class="btn alt sm" data-re="${r.id}">Move back to pending</button>` : ''}${st === 'approved' && r.eventId ? `<button class="btn alt sm" data-ed="${esc(r.eventId)}">Open event to edit</button>` : ''}<button class="btn alt sm" data-rm="${r.id}" style="color:#b91c1c">Delete record</button></div></div>`; }).join('') : '<p class="meta">Nothing here.</p>'}</div>`;
+    document.querySelectorAll('[data-rq]').forEach(b => b.onclick = () => { rq = b.dataset.rq; requestsView(); });
+    if ($('#clr')) $('#clr').onclick = async () => { if (!confirm('Delete these ' + rows.length + ' records from history? Events already created are not affected.')) return; try { await Promise.all(rows.map(r => deleteDoc(doc(db, 'submissions', r.id)))); toast('Deleted.'); requestsView(); } catch (e) { toast('Failed: ' + (e.code || e.message)); } };
+    document.querySelectorAll('[data-rm]').forEach(b => b.onclick = async () => { if (!confirm('Delete this record? The event (if approved) stays on the site.')) return; try { await deleteDoc(doc(db, 'submissions', b.dataset.rm)); requestsView(); } catch (e) { toast('Failed: ' + (e.code || e.message)); } });
+    document.querySelectorAll('[data-re]').forEach(b => b.onclick = async () => { try { await updateDoc(doc(db, 'submissions', b.dataset.re), { status: 'pending', adminNote: '', handledAt: serverTimestamp() }); requestsView(); } catch (e) { toast('Failed: ' + (e.code || e.message)); } });
+    document.querySelectorAll('[data-ed]').forEach(b => b.onclick = async () => { try { const sn = await getDoc(doc(db, 'events', b.dataset.ed)); if (!sn.exists()) return toast('That event no longer exists.'); tab = 'events'; document.querySelectorAll('.tabs button').forEach(x => x.setAttribute('aria-selected', x.dataset.t === 'events')); formView('events', { id: sn.id, ...sn.data() }); } catch (e) { toast('Failed: ' + (e.code || e.message)); } });
     document.querySelectorAll('[data-ok]').forEach(b => b.onclick = async () => {
-      const r = { ...rows.find(x => x.id === b.dataset.ok) }; b.disabled = true;
+      const r = { ...all.find(x => x.id === b.dataset.ok) }; b.disabled = true;
       const key = (map, v) => { v = String(v || '').trim(); const l = v.toLowerCase(); return Object.keys(map).find(k => k === l || String(map[k]).toLowerCase() === l) || ''; };
       r.city = key(CITIES, r.city); r.category = key(CATS, r.category);
       if (!r.city || !r.category || !r.title || !r.start_date) { b.disabled = false; return toast('This request has an invalid city, category or date.'); }
       try {
-        const id = await uniqueId('events', r.title, r.city);
-        await setDoc(doc(db, 'events', id), { title: r.title, city: r.city, category: r.category, venue: r.venue, area: r.area || '', address: '', start_date: r.start_date, end_date: r.end_date || r.start_date, start_time: r.start_time || '', price: '', ticket_url: '', image_url: r.image_url || '', image_data: r.image_data || '', organizer: r.organizer || '', description: r.description || '', passes: parsePasses(r.passes_text), featured: false, published: true, source: 'listing-form', updatedAt: serverTimestamp() });
-        await updateDoc(doc(db, 'submissions', r.id), { status: 'approved', eventId: id });
+        let id = r.eventId, old = null;
+        if (id) { const sn = await getDoc(doc(db, 'events', id)); if (sn.exists()) old = sn.data(); else id = ''; }
+        if (!id) id = await uniqueId('events', r.title, r.city);
+        const np = parsePasses(r.passes_text), op = old?.passes || [];
+        const passes = np.map(p => { const m = op.find(o => String(o.name).toLowerCase() === p.name.toLowerCase()); return m ? { ...p, buy_url: m.buy_url || '', note: m.note || '' } : p; });
+        const f = { title: r.title, city: r.city, category: r.category, venue: r.venue, area: r.area || '', start_date: r.start_date, end_date: r.end_date || r.start_date, start_time: r.start_time || '', image_url: r.image_url || '', image_data: r.image_data || '', organizer: r.organizer || '', description: r.description || '', passes, published: true, updatedAt: serverTimestamp() };
+        if (r.ownerUid) { f.ownerUid = r.ownerUid; f.ownerEmail = r.ownerEmail || ''; }
+        if (old) await setDoc(doc(db, 'events', id), f, { merge: true });
+        else await setDoc(doc(db, 'events', id), { address: '', price: '', ticket_url: '', featured: false, source: 'listing-form', ...f });
+        await updateDoc(doc(db, 'submissions', r.id), { status: 'approved', eventId: id, handledAt: serverTimestamp(), adminNote: '' });
         toast('Approved. Press Publish site to make it live.', 6000); requestsView();
       } catch (e) { b.disabled = false; toast('Failed: ' + (e.code || e.message)); }
     });
-    document.querySelectorAll('[data-no]').forEach(b => b.onclick = async () => { if (!confirm('Reject this request?')) return; try { await updateDoc(doc(db, 'submissions', b.dataset.no), { status: 'rejected' }); toast('Rejected.'); requestsView(); } catch (e) { toast('Failed: ' + (e.code || e.message)); } });
+    document.querySelectorAll('[data-no]').forEach(b => b.onclick = async () => { const why = prompt('Reason for rejecting (shown to the organiser if they signed in). Leave blank for none:', ''); if (why === null) return; try { await updateDoc(doc(db, 'submissions', b.dataset.no), { status: 'rejected', adminNote: why.trim().slice(0, 300), handledAt: serverTimestamp() }); toast('Rejected.'); requestsView(); } catch (e) { toast('Failed: ' + (e.code || e.message)); } });
   } catch (e) { denied(e); }
 }
 let flt = { q: '', st: 'all', city: '', cat: '' }, seedInfo = null;

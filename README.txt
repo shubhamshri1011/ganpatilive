@@ -45,3 +45,14 @@ QUICK ADD (admin > Quick add)
 - Form ke upar "Please verify" notes aate hain. Check/edit karke Save, phir Publish site.
 - Kai events ek saath: beech mein --- wali line rakho. Ek save/skip ke baad agla form khulta hai.
 - Phone number public page par automatically nahi daalta.
+
+ORGANISER PORTAL (/my-events)
+- Organiser Google se sign in karta hai, apne events list/edit/take down/delete kar sakta hai. Sirf apna data dikhta hai (Firestore rules se enforce).
+- Edit karne par listing dubara "pending" ho jati hai; admin Requests tab mein "Approve changes" dabata hai, tab live event update hota hai (purana version tab tak live rehta hai).
+- Take down: event ko published=false kar deta hai (site update ke baad hat jata hai). Admin ko "Taken down by owner" mein dikhta hai.
+- Admin > Requests mein Pending / Approved / Rejected / Taken down / All history hai, reject karte time reason likh sakte ho.
+- Firebase > Authentication > Settings > Authorized domains mein puneganpatilive.in, www.puneganpatilive.in aur ganpatilive.vercel.app hona chahiye.
+- Firestore rules: poora naya firestore.rules.txt Rules mein paste karke Publish karo.
+
+SHARE
+- Har page par "Share" button (phone par native share, computer par WhatsApp/Telegram/Facebook/X/Email/Copy link), har event card par share icon.

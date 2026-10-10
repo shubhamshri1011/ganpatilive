@@ -99,3 +99,34 @@
     });
   }
 })();
+
+(function () {
+  function openMenu(url, title) {
+    var enc = encodeURIComponent, text = title + ' ' + url;
+    var m = document.createElement('div'); m.className = 'shm'; m.setAttribute('role', 'dialog'); m.setAttribute('aria-label', 'Share');
+    m.innerHTML = '<div class="box"><p class="t">Share</p>' +
+      '<a target="_blank" rel="noopener" href="https://wa.me/?text=' + enc(text) + '">WhatsApp</a>' +
+      '<a target="_blank" rel="noopener" href="https://t.me/share/url?url=' + enc(url) + '&text=' + enc(title) + '">Telegram</a>' +
+      '<a target="_blank" rel="noopener" href="https://www.facebook.com/sharer/sharer.php?u=' + enc(url) + '">Facebook</a>' +
+      '<a target="_blank" rel="noopener" href="https://twitter.com/intent/tweet?url=' + enc(url) + '&text=' + enc(title) + '">X (Twitter)</a>' +
+      '<a href="mailto:?subject=' + enc(title) + '&body=' + enc(text) + '">Email</a>' +
+      '<button type="button" data-copy>Copy link</button><button type="button" data-close>Close</button></div>';
+    document.body.appendChild(m);
+    var close = function () { if (m.parentNode) m.parentNode.removeChild(m); };
+    m.addEventListener('click', function (e) {
+      if (e.target === m || e.target.hasAttribute('data-close')) return close();
+      if (e.target.hasAttribute('data-copy')) {
+        var done = function () { e.target.textContent = 'Link copied'; setTimeout(close, 700); };
+        if (navigator.clipboard && navigator.clipboard.writeText) navigator.clipboard.writeText(url).then(done, function () { window.prompt('Copy this link', url); });
+        else window.prompt('Copy this link', url);
+      }
+    });
+  }
+  document.addEventListener('click', function (e) {
+    var b = e.target.closest ? e.target.closest('[data-share]') : null; if (!b) return;
+    e.preventDefault();
+    var url = b.getAttribute('data-url') || location.href, title = b.getAttribute('data-title') || document.title;
+    if (navigator.share) navigator.share({ title: title, text: title, url: url }).catch(function (err) { if (err && err.name !== 'AbortError') openMenu(url, title); });
+    else openMenu(url, title);
+  });
+})();
