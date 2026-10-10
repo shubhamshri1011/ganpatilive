@@ -38,3 +38,10 @@ LISTING REQUESTS (public form)
 - Admin > Requests tab mein pending requests dikhti hain: Approve and publish / Reject. Phir Publish site dabao.
 - Firestore rules mein firestore.rules.txt ka naya "match /submissions/{id}" block bhi add karke Publish karna zaroori hai.
 - Admin ke event/product form mein bhi ab poster upload hai (link ki zaroorat nahi).
+
+QUICK ADD (admin > Quick add)
+- Kahin se copy kiya hua event ka paragraph paste karo (poster image optional). "Analyse and fill the form" dabao.
+- Title, city, category, venue, area, date, time, price/passes, ticket link, organiser, description apne aap bhar jate hain.
+- Form ke upar "Please verify" notes aate hain. Check/edit karke Save, phir Publish site.
+- Kai events ek saath: beech mein --- wali line rakho. Ek save/skip ke baad agla form khulta hai.
+- Phone number public page par automatically nahi daalta.
