@@ -1,0 +1,66 @@
+{
+  "buildCommand": "node build.mjs",
+  "outputDirectory": "dist",
+  "cleanUrls": true,
+  "trailingSlash": false,
+  "redirects": [
+    {
+      "source": "/pune-ganpati/natu-baug-ganpati",
+      "destination": "/pune-ganpati/natu-baug",
+      "permanent": true
+    },
+    {
+      "source": "/pune-ganpati/hathi-ganpati-mandal",
+      "destination": "/pune-ganpati/hathi-ganpati",
+      "permanent": true
+    },
+    {
+      "source": "/pune-ganpati/hutatma-babu-genu",
+      "destination": "/pune-ganpati/babu-genu",
+      "permanent": true
+    },
+    {
+      "source": "/pune-ganpati/jilbya-maruti-ganpati",
+      "destination": "/pune-ganpati/jilbya-maruti",
+      "permanent": true
+    },
+    {
+      "source": "/pune-ganpati/akhil-mandai-ganpati",
+      "destination": "/pune-ganpati/akhil-mandai",
+      "permanent": true
+    }
+  ],
+  "headers": [
+    {
+      "source": "/(.*)",
+      "headers": [
+        {
+          "key": "X-Content-Type-Options",
+          "value": "nosniff"
+        },
+        {
+          "key": "Referrer-Policy",
+          "value": "strict-origin-when-cross-origin"
+        }
+      ]
+    },
+    {
+      "source": "/assets/(.*)",
+      "headers": [
+        {
+          "key": "Cache-Control",
+          "value": "public, max-age=86400"
+        }
+      ]
+    },
+    {
+      "source": "/admin",
+      "headers": [
+        {
+          "key": "X-Robots-Tag",
+          "value": "noindex, nofollow"
+        }
+      ]
+    }
+  ]
+}
