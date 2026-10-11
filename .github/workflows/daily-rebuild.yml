@@ -1,0 +1,18 @@
+# Rebuilds the site every day (00:10 IST) so "ended" events and counts stay fresh.
+# Needs ONE secret: GitHub repo > Settings > Secrets and variables > Actions > New secret
+#   name: VERCEL_DEPLOY_HOOK_URL   value: your Vercel Deploy Hook URL
+# (never write the URL in this file).
+name: daily-rebuild
+on:
+  schedule: [{ cron: '40 18 * * *' }]   # 18:40 UTC = 00:10 IST
+  workflow_dispatch:
+jobs:
+  ping:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Trigger Vercel deploy hook
+        env:
+          HOOK: ${{ secrets.VERCEL_DEPLOY_HOOK_URL }}
+        run: |
+          if [ -z "$HOOK" ]; then echo "Secret VERCEL_DEPLOY_HOOK_URL not set; skipping"; exit 0; fi
+          curl -fsS -X POST "$HOOK" > /dev/null && echo "Deploy triggered"

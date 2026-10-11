@@ -1,3 +1,5 @@
+NOTE: Ab poori guide docs/OPERATIONS.md mein hai (daily kaam, recovery, security checklist). Rules ke liye firestore.rules.txt ka POORA text paste karo.
+
 PUNE GANPATI LIVE v4: events-first site + admin panel
 ======================================================
 

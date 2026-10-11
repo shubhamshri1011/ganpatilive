@@ -32,6 +32,10 @@ export function parseEventText(raw, { CITIES, CATS, today }) {
   const fmt = (h, mi, ap) => { h = +h; ap = String(ap).toUpperCase().replace(/\./g, ''); return `${h}:${mi || '00'} ${ap}`; };
   let tm = w.match(/\b(\d{1,2})(?:[:.](\d{2}))?\s*(am|pm|a\.m\.|p\.m\.)?\s*(?:-|–|—|to|till)\s*(\d{1,2})(?:[:.](\d{2}))?\s*(am|pm|a\.m\.|p\.m\.)/i);
   if (tm) start_time = fmt(tm[1], tm[2], tm[3] || tm[6]); else { tm = w.match(/\b(\d{1,2})(?:[:.](\d{2}))?\s*(am|pm|a\.m\.|p\.m\.)/i); if (tm) start_time = fmt(tm[1], tm[2], tm[3]); }
+  if (!start_time) { // Hinglish: "shaam 7 baje", "raat 8:30 baje", "subah 9 baje"
+    const hb = w.match(/\b(subah|savere|dopahar|dophar|shaam|sham|raat)\s*(\d{1,2})(?:[:.](\d{2}))?\s*baje\b/i) || null;
+    if (hb) { const pm = /dopahar|dophar|shaam|sham|raat/i.test(hb[1]); start_time = fmt(hb[2], hb[3], pm ? 'PM' : 'AM'); }
+  }
   if (!start_time) { const m24 = w.match(/\b([01]?\d|2[0-3]):([0-5]\d)\s*(?:hrs|hours)?\b/i); if (m24) { let h = +m24[1], ap = h >= 12 ? 'PM' : 'AM'; h = h % 12 || 12; start_time = `${h}:${m24[2]} ${ap}`; } }
   if (!start_time) notes.push('Start time not found.');
 
@@ -56,7 +60,7 @@ export function parseEventText(raw, { CITIES, CATS, today }) {
   const KEY = '(couples?|singles?|stag|female|males?|ladies|girls?|boys?|family|group|vip|gold|silver|platinum|early\\s*bird|general|entry|regular|premium|season|students?|kids?|child(?:ren)?|adults?|normal|standard|combo|day\\s*pass)';
   const segRe = new RegExp(`${KEY}[a-z ]{0,18}?[\\s:\\-–=@]*(?:₹|rs\\.?|inr)?\\s*([\\d,]{2,6})\\b`, 'i');
   for (const seg of w.split(/[\n,;|•]+/)) { const m = seg.match(segRe); if (m && num(m[2]) >= 10) { let name = m[1].replace(/\s+/g, ' ').trim(); name = name.replace(/\b\w/g, c => c.toUpperCase()); const key = name.toLowerCase(); if (!seen.has(key)) { seen.add(key); passes.push({ name, price: String(num(m[2])), buy_url: '', note: '' }); } } }
-  const prices = []; for (const m of w.matchAll(/(?:₹|rs\.?|inr)\s*([\d,]+)|([\d,]{2,7})\s*(?:\/-|rs\b|inr\b|rupees)/gi)) { const n = num(m[1] || m[2]); if (n >= 10) prices.push(n); }
+  const prices = []; for (const m of w.matchAll(/(?:₹|rs\.?|inr)\s*([\d,]+)|([\d,]{2,7})\s*(?:\/-|rs\b|inr\b|rupees?\b|rupaye\b|rupay\b)/gi)) { const n = num(m[1] || m[2]); if (n >= 10) prices.push(n); }
   let price = '';
   if (!passes.length && prices.length) { const u = [...new Set(prices)].sort((a, b) => a - b); price = String(u[0]); if (u.length > 1) notes.push('Several prices found (' + u.join(', ') + '): set the lowest as price. Add passes if needed.'); }
   if (passes.length) notes.push('Passes found: ' + passes.map(p => p.name + ' Rs ' + p.price).join(', ') + '. Add a payment link for each, or leave blank to book via WhatsApp.');

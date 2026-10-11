@@ -13,35 +13,77 @@ const money = x => { const n = Number(String(x ?? '').replace(/[^\d.]/g, '')); r
 const inr = n => 'Rs ' + Number(n).toLocaleString('en-IN');
 const slugify = s => String(s).toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '');
 // ---------- Firestore (public REST, published docs only) ----------
+// SAFETY RULE: on Vercel / CI, any Firestore problem STOPS the build (exit 1). Vercel then keeps the previous good
+// deployment live. Without this a short Firestore outage could publish a site with zero events.
+// Local runs (no VERCEL/CI env) fall back to data/*.json so you can still test offline.
+const STRICT = !!(process.env.VERCEL || process.env.CI) && !process.env.ALLOW_OFFLINE_BUILD;
+const FS = process.env.FIRESTORE_BASE || `https://firestore.googleapis.com/v1/projects/${PID}/databases/(default)/documents`;
+const sleep = ms => new Promise(r => setTimeout(r, ms));
+const WARN = []; let OFFLINE = false;
+function stop(msg) { console.error(`\n==== BUILD STOPPED ====\n${msg}\nSite safe hai: Vercel purana (working) deployment live rakhega. Thodi der baad "Publish site" dobara dabao.\n`); process.exit(1); }
+async function fsFetch(url, init, label) {
+  let err;
+  for (let a = 1; a <= 4; a++) {
+    try {
+      const r = await fetch(url, { ...init, signal: AbortSignal.timeout(25000) });
+      if (r.ok) return await r.json();
+      err = new Error('HTTP ' + r.status); err.status = r.status;
+      if (r.status !== 429 && r.status < 500) break; // 4xx (rules, bad request, not found) will not fix itself
+    } catch (e) { err = e; }
+    if (a < 4) { console.warn(`  ${label}: try ${a} failed (${err.message}); retrying`); await sleep(2000 * a); }
+  }
+  throw err;
+}
 const dec = v => 'stringValue' in v ? v.stringValue : 'integerValue' in v ? Number(v.integerValue) : 'doubleValue' in v ? v.doubleValue : 'booleanValue' in v ? v.booleanValue : 'timestampValue' in v ? v.timestampValue : 'arrayValue' in v ? (v.arrayValue.values || []).map(dec) : 'mapValue' in v ? decf(v.mapValue.fields || {}) : null;
 const decf = f => Object.fromEntries(Object.entries(f).map(([k, v]) => [k, dec(v)]));
 async function fsQuery(col) {
-  const r = await fetch(`https://firestore.googleapis.com/v1/projects/${PID}/databases/(default)/documents:runQuery`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, signal: AbortSignal.timeout(20000),
-    body: JSON.stringify({ structuredQuery: { from: [{ collectionId: col }], where: { fieldFilter: { field: { fieldPath: 'published' }, op: 'EQUAL', value: { booleanValue: true } } } } }) });
-  if (!r.ok) throw new Error('HTTP ' + r.status);
-  return (await r.json()).filter(x => x.document).map(x => ({ id: x.document.name.split('/').pop(), ...decf(x.document.fields || {}) }));
-}
-async function fsDoc(p) {
-  const r = await fetch(`https://firestore.googleapis.com/v1/projects/${PID}/databases/(default)/documents/${p}`, { signal: AbortSignal.timeout(20000) });
-  if (!r.ok) throw new Error('HTTP ' + r.status); return decf((await r.json()).fields || {});
+  const j = await fsFetch(`${FS}:runQuery`, { method: 'POST', headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ structuredQuery: { from: [{ collectionId: col }], where: { fieldFilter: { field: { fieldPath: 'published' }, op: 'EQUAL', value: { booleanValue: true } } } } }) }, `Firestore ${col}`);
+  if (!Array.isArray(j)) throw new Error('unexpected answer');
+  const bad = j.find(x => x.error); if (bad) throw new Error('Firestore error: ' + (bad.error.message || 'unknown'));
+  return j.filter(x => x.document).map(x => ({ id: x.document.name.split('/').pop(), ...decf(x.document.fields || {}) }));
 }
 async function load(col, seed) {
-  let s = []; if (SET.seedImported !== true) try { s = J(seed); } catch {} // after "Take over starter data" in /admin, Firestore is the only source
-  let live = []; try { live = await fsQuery(col); console.log(`Firestore ${col}: ${live.length} published`); } catch (e) { console.warn(`Firestore ${col} skipped (${e.message}); using seed only`); }
+  let live = [];
+  try { live = await fsQuery(col); console.log(`Firestore ${col}: ${live.length} published`); }
+  catch (e) {
+    if (STRICT) stop(`Firestore "${col}" load nahi ho paya (${e.message}). Build roka gaya taaki site khali/purani data ke saath publish na ho.`);
+    OFFLINE = true; console.warn(`Firestore ${col} skipped (${e.message}); using local seed only (local run)`);
+  }
+  // after "Take over starter data" in /admin, Firestore is the only source. Zero events then means something is wrong.
+  if (col === 'events' && SET.seedImported === true && !live.length && !OFFLINE && !process.env.ALLOW_EMPTY)
+    stop('Firestore se 0 published events aaye, jabki starter data pehle hi take-over ho chuka hai. Ye galat lagta hai (Firestore/rules problem). Agar sach mein sab events hide kiye hain to env ALLOW_EMPTY=1 ke saath build karo.');
+  let s = []; if (SET.seedImported !== true) try { s = J(seed); } catch {}
   const m = new Map(); [...s, ...live].forEach(x => x.id && m.set(x.id, x)); return [...m.values()];
 }
-let SET = {}; try { SET = J('settings.json'); } catch {} try { SET = { ...SET, ...(await fsDoc('settings/site')) }; } catch {}
+let SET = {}; try { SET = J('settings.json'); } catch {}
+try { SET = { ...SET, ...decf((await fsFetch(`${FS}/settings/site`, {}, 'Firestore settings')).fields || {}) }; }
+catch (e) {
+  if (e.status === 404) console.log('Firestore settings/site not created yet: using data/settings.json');
+  else if (STRICT) stop(`Firestore settings/site padh nahi paya (${e.message}). Isse "take over" flag galat ho sakta hai, isliye build roka gaya.`);
+  else { OFFLINE = true; console.warn(`Firestore settings skipped (${e.message}); local run`); }
+}
 const WA = String(SET.whatsapp || '').replace(/\D/g, ''), EMAIL = SET.email || 'shubhamshri.1110@gmail.com';
 // Poster uploaded in /admin or via the public form is stored as a small data URL; write it out as a real image file.
-const IMG = (kind, id, d) => { const m = /^data:image\/(jpeg|png|webp);base64,([A-Za-z0-9+/=]+)$/.exec(String(d || '')); if (!m) return ''; const rel = `img/${kind}-${slugify(id)}.${m[1] === 'jpeg' ? 'jpg' : m[1]}`; const f = path.join(OUT, rel); fs.mkdirSync(path.dirname(f), { recursive: true }); fs.writeFileSync(f, Buffer.from(m[2], 'base64')); return SITE + '/' + rel; };
+const IMG = (kind, id, d) => { const m = /^data:image\/(jpeg|png|webp);base64,([A-Za-z0-9+/=]+)$/.exec(String(d || '')); if (!m) return ''; const buf = Buffer.from(m[2], 'base64'); if (!(m[1] === 'jpeg' ? buf[0] === 0xFF && buf[1] === 0xD8 : m[1] === 'png' ? buf.subarray(0, 4).toString('hex') === '89504e47' : buf.subarray(0, 4).toString() === 'RIFF')) { WARN.push('Bad image data skipped: ' + kind + ' ' + id); return ''; } const rel = `img/${kind}-${slugify(id)}.${m[1] === 'jpeg' ? 'jpg' : m[1]}`; const f = path.join(OUT, rel); fs.mkdirSync(path.dirname(f), { recursive: true }); fs.writeFileSync(f, buf); return SITE + '/' + rel; };
 // ---------- normalise ----------
 const t24 = t => { const m = String(t || '').trim().toUpperCase().match(/^(\d{1,2})(?::(\d{2}))?\s*(AM|PM)?$/); if (!m) return null; let h = +m[1]; const ap = m[3]; if (ap === 'PM' && h < 12) h += 12; if (ap === 'AM' && h === 12) h = 0; return String(h).padStart(2, '0') + ':' + (m[2] || '00'); };
 const isDate = d => /^\d{4}-\d{2}-\d{2}$/.test(d || '') && !isNaN(new Date(d + 'T00:00:00Z'));
-const EV = []; for (const r of await load('events', 'events.json')) {
-  const e = { ...r, slug: r.id }; e.city = String(e.city || '').toLowerCase(); e.category = String(e.category || '').toLowerCase();
-  if (!e.title || !CITIES[e.city] || !CATS[e.category] || !isDate(e.start_date)) { console.warn('SKIP event', r.id); continue; }
-  if (!isDate(e.end_date)) e.end_date = e.start_date;
-  e.passes = (Array.isArray(e.passes) ? e.passes : []).filter(p => p && p.name).map(p => ({ name: String(p.name), price: money(p.price), buy_url: safeUrl(p.buy_url), note: p.note || '' }));
+const KEEP_ENDED_DAYS = Number(process.env.KEEP_ENDED_DAYS || 60); // an ended event keeps a noindex page this long, then it is dropped from the build
+const CUT = new Date(new Date(TODAY + 'T00:00:00Z').getTime() - KEEP_ENDED_DAYS * 864e5).toISOString().slice(0, 10);
+const MIN_CITY = 1, MIN_CAT = 2; // a city page / city+category page with fewer upcoming events is noindex (thin page)
+const cap = (x, n) => String(x ?? '').trim().slice(0, n);
+const EV = [], SEEN = new Set(); let DROPPED = 0;
+for (const r of await load('events', 'events.json')) {
+  const slug = slugify(r.id || ''), e = { ...r, slug }; delete e.ownerEmail; delete e.ownerUid; // owner details never reach the public build
+  e.city = String(e.city || '').toLowerCase(); e.category = String(e.category || '').toLowerCase();
+  if (!slug || SEEN.has(slug) || !e.title || !CITIES[e.city] || !CATS[e.category] || !isDate(e.start_date)) { WARN.push('SKIP event ' + r.id); continue; }
+  SEEN.add(slug);
+  e.title = cap(e.title, 150); e.venue = cap(e.venue, 200); e.area = cap(e.area, 100); e.organizer = cap(e.organizer, 120); e.description = cap(e.description, 3000); e.start_time = cap(e.start_time, 30);
+  if (!isDate(e.end_date) || e.end_date < e.start_date) e.end_date = e.start_date;
+  if (e.end_date < CUT) { DROPPED++; continue; }
+  e.mod = /^\d{4}-\d{2}-\d{2}/.test(String(e.updatedAt || '')) ? String(e.updatedAt).slice(0, 10) : '';
+  e.passes = (Array.isArray(e.passes) ? e.passes : []).filter(p => p && p.name).map(p => ({ name: cap(p.name, 80), price: money(p.price), buy_url: safeUrl(p.buy_url), note: cap(p.note, 200) }));
   e.ticket_url = safeUrl(e.ticket_url); e.image_url = IMG('ev', r.id, e.image_data) || safeUrl(e.image_url); delete e.image_data; e.t24 = t24(e.start_time);
   e.from = e.passes.length ? Math.min(...e.passes.map(p => p.price)) : money(e.price);
   e.free = !e.passes.some(p => p.price > 0) && e.from === 0; e.feat = e.featured === true || String(e.featured).toLowerCase() === 'yes';
@@ -50,14 +92,19 @@ const EV = []; for (const r of await load('events', 'events.json')) {
 const up = e => e.end_date >= TODAY;
 const UP = EV.filter(up).sort((a, b) => a.start_date.localeCompare(b.start_date) || (b.feat - a.feat));
 const FEAT_FIRST = [...UP].sort((a, b) => (b.feat - a.feat) || a.start_date.localeCompare(b.start_date));
+const catPages = new Set(UP.map(e => e.city + '/' + e.category));
 const PR = []; for (const r of await load('products', 'products.json')) {
-  const p = { ...r, slug: r.id }; if (!p.title || !money(p.price)) { console.warn('SKIP product', r.id); continue; }
+  const p = { ...r, slug: slugify(r.id || '') }; if (!p.slug || !p.title || !money(p.price)) { console.warn('SKIP product', r.id); continue; }
   p.price = money(p.price); p.mrp = money(p.mrp) > p.price ? money(p.mrp) : 0; p.image_url = IMG('pr', r.id, p.image_data) || safeUrl(p.image_url); delete p.image_data; p.buy_url = safeUrl(p.buy_url);
   p.cat = String(p.category || 'General').trim(); p.instock = String(p.stock || 'in') !== 'out'; p.feat = p.featured === true; PR.push(p);
 }
 PR.sort((a, b) => (b.feat - a.feat) || a.title.localeCompare(b.title));
 const HASSHOP = PR.length > 0;
 // ---------- helpers ----------
+const VER = TODAY + '-8'; // cache-busting token for /assets files
+const fit = (t, n) => { t = String(t).replace(/\s+/g, ' ').trim(); return t.length <= n ? t : t.slice(0, n).replace(/\s+\S*$/, '').replace(/[\s,:;|\-–(&]+$/, ''); }; // cut at a word boundary
+const modOf = l => l.map(x => x.mod).filter(Boolean).sort().pop() || '';
+const STATE_CODE = { 'Andhra Pradesh': 'AP', 'Arunachal Pradesh': 'AR', 'Assam': 'AS', 'Bihar': 'BR', 'Chhattisgarh': 'CG', 'Goa': 'GA', 'Gujarat': 'GJ', 'Haryana': 'HR', 'Himachal Pradesh': 'HP', 'Jharkhand': 'JH', 'Karnataka': 'KA', 'Kerala': 'KL', 'Madhya Pradesh': 'MP', 'Maharashtra': 'MH', 'Manipur': 'MN', 'Meghalaya': 'ML', 'Mizoram': 'MZ', 'Nagaland': 'NL', 'Odisha': 'OD', 'Punjab': 'PB', 'Rajasthan': 'RJ', 'Sikkim': 'SK', 'Tamil Nadu': 'TN', 'Telangana': 'TS', 'Tripura': 'TR', 'Uttar Pradesh': 'UP', 'Uttarakhand': 'UK', 'West Bengal': 'WB', 'Delhi': 'DL', 'Jammu and Kashmir': 'JK', 'Ladakh': 'LA', 'Chandigarh': 'CH', 'Puducherry': 'PY', 'Lakshadweep': 'LD', 'Andaman and Nicobar Islands': 'AN' };
 const MON = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'], DAY = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
 const pd = d => new Date(d + 'T00:00:00Z');
 const fd = d => { const x = pd(d); return `${DAY[x.getUTCDay()]} ${x.getUTCDate()} ${MON[x.getUTCMonth()]}`; };
@@ -72,37 +119,39 @@ const WEB = { ...ORG[1], potentialAction: { '@type': 'SearchAction', target: { '
 const BASE = [{ ...ORG[0], logo: { '@type': 'ImageObject', url: SITE + '/assets/logo.png', width: 512, height: 512 }, image: SITE + '/assets/og-image.png' }, WEB];
 const crumbsHtml = it => '<p class="crumbs">' + it.map(([n, u]) => u ? `<a href="${u}">${esc(n)}</a>` : esc(n)).join(' / ') + '</p>';
 const crumbsLd = it => ({ '@type': 'BreadcrumbList', itemListElement: it.map(([n, u], i) => ({ '@type': 'ListItem', position: i + 1, name: n, item: SITE + u })) });
-const wpLd = (p, t, d, coll) => ({ '@type': coll ? ['WebPage', 'CollectionPage'] : 'WebPage', '@id': SITE + p, url: SITE + p, name: t, description: d, isPartOf: { '@id': SITE + '/#web' }, dateModified: TODAY, inLanguage: 'en-IN', speakable: { '@type': 'SpeakableSpecification', cssSelector: ['#quick-answer', 'h1'] } });
+const wpLd = (p, t, d, coll, mod) => ({ '@type': coll ? ['WebPage', 'CollectionPage'] : 'WebPage', '@id': SITE + p, url: SITE + p, name: t, description: d, isPartOf: { '@id': SITE + '/#web' }, inLanguage: 'en-IN', ...(mod ? { dateModified: mod } : {}), speakable: { '@type': 'SpeakableSpecification', cssSelector: ['#quick-answer', 'h1'] } });
 const faqLd = it => ({ '@type': 'FAQPage', mainEntity: it.map(([q, a]) => ({ '@type': 'Question', name: q, acceptedAnswer: { '@type': 'Answer', text: a } })) });
 const faqHtml = it => '<h2 style="margin-top:32px">Frequently asked questions</h2><div style="margin-top:12px">' + it.map(([q, a]) => `<details class="faq"><summary>${esc(q)}</summary><p>${esc(a)}</p></details>`).join('') + '</div>';
 const listLd = (items, f) => ({ '@type': 'ItemList', itemListElement: items.slice(0, 30).map((x, i) => ({ '@type': 'ListItem', position: i + 1, url: SITE + f(x).u, name: f(x).n })) });
-const SM = []; const add = (p, pr = '0.7', fq = 'weekly') => SM.push([p, pr, fq]);
+const SM = []; const add = (p, pr = '0.7', fq = 'weekly', mod = '') => SM.push([p, mod]); // priority/changefreq are ignored by Google, so only loc + real lastmod are written
 function write(p, txt) { const f = path.join(OUT, p); fs.mkdirSync(path.dirname(f), { recursive: true }); fs.writeFileSync(f, txt); }
 // ---------- layout + components ----------
-const GEO = '<meta name="geo.region" content="IN-MH"><meta name="geo.placename" content="Pune"><meta name="geo.position" content="18.5204;73.8567"><meta name="ICBM" content="18.5204, 73.8567">';
+const geo = c => { const x = CITIES[c]; if (!x) return ''; const code = STATE_CODE[x[1]]; return (code ? `<meta name="geo.region" content="IN-${code}">` : '') + `<meta name="geo.placename" content="${esc(x[0])}">` + (x[2] != null ? `<meta name="geo.position" content="${x[2]};${x[3]}"><meta name="ICBM" content="${x[2]}, ${x[3]}">` : ''); };
 function layout(p, title, desc, body, graph, o = {}) {
+  title = fit(title, 65); desc = fit(desc, 160);
   const url = SITE + (p === '/' ? '/' : p), cur = o.cur || '', robots = o.robots || 'index, follow, max-image-preview:large, max-snippet:-1';
   const nav = [['/events', 'Events'], ...(HASSHOP ? [['/shop', 'Shop']] : []), ['/navratri', 'Navratri'], ['/diwali', 'Diwali'], ['/ganpati', 'Ganpati guide']].map(([h, t]) => `<a href="${h}"${cur === h ? ' aria-current="page"' : ''}>${t}</a>`).join('');
-  const cities = [...new Set(UP.map(e => e.city))].map(c => `<li><a href="/events/${c}">Events in ${cityName(c)}</a></li>`).join('');
+  const cities = [...new Set(UP.map(e => e.city))].sort((a, b) => UP.filter(e => e.city === b).length - UP.filter(e => e.city === a).length).slice(0, 12).map(c => `<li><a href="/events/${c}">Events in ${cityName(c)}</a></li>`).join('');
   const sch = JSON.stringify({ '@context': 'https://schema.org', '@graph': graph }).replace(/</g, '\\u003c');
   return `<!DOCTYPE html>
 <html lang="en-IN"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1">
 <title>${esc(title)}</title><meta name="description" content="${esc(desc)}"><link rel="canonical" href="${url}"><meta name="robots" content="${robots}">
-<meta property="og:type" content="website"><meta property="og:site_name" content="Pune Ganpati LIVE"><meta property="og:title" content="${esc(title)}"><meta property="og:description" content="${esc(desc)}"><meta property="og:url" content="${url}"><meta property="og:locale" content="en_IN"><meta property="og:image" content="${esc(o.image || SITE + '/assets/og-image.png')}"><meta name="twitter:card" content="summary_large_image"><meta name="twitter:image" content="${esc(o.image || SITE + '/assets/og-image.png')}"><meta name="theme-color" content="#1b1740"><link rel="icon" href="/favicon.ico" sizes="any"><link rel="icon" type="image/png" sizes="32x32" href="/assets/favicon-32.png"><link rel="apple-touch-icon" href="/assets/apple-touch-icon.png"><link rel="manifest" href="/site.webmanifest">${GEO}
+<meta property="og:type" content="website"><meta property="og:site_name" content="Pune Ganpati LIVE"><meta property="og:title" content="${esc(title)}"><meta property="og:description" content="${esc(desc)}"><meta property="og:url" content="${url}"><meta property="og:locale" content="en_IN"><meta property="og:image" content="${esc(o.image || SITE + '/assets/og-image.png')}"><meta name="twitter:card" content="summary_large_image"><meta name="twitter:image" content="${esc(o.image || SITE + '/assets/og-image.png')}">${o.image ? '' : '<meta property="og:image:width" content="1200"><meta property="og:image:height" content="630">'}<meta name="theme-color" content="#1b1740"><link rel="icon" href="/favicon.ico" sizes="any"><link rel="icon" type="image/png" sizes="32x32" href="/assets/favicon-32.png"><link rel="apple-touch-icon" href="/assets/apple-touch-icon.png"><link rel="manifest" href="/site.webmanifest">${geo(o.city || 'pune')}
 <link rel="alternate" type="text/plain" href="/llms.txt"><link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800;900&family=Noto+Sans+Devanagari:wght@400;700&display=swap" rel="stylesheet"><link rel="stylesheet" href="/assets/site.css?v=${TODAY}-7">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800;900&family=Noto+Sans+Devanagari:wght@400;700&display=swap" rel="stylesheet"><link rel="stylesheet" href="/assets/site.css?v=${VER}">
 <script type="application/ld+json">${sch}</script></head><body${o.sticky ? ' class="hs"' : ''}>
+<a class="skip" href="#main">Skip to content</a>
 <header class="hd"><div class="wrap"><a class="brand" href="/" aria-label="Pune Ganpati LIVE home"><img src="/assets/logo-header.png" alt="" width="40" height="40"><span>Pune Ganpati LIVE<small>EVENTS, FESTIVALS AND PASSES</small></span></a><nav aria-label="Main">${nav}</nav><a class="btn sm" href="/list-your-event">List your event</a></div></header>
-<main>${body}</main>
+<main id="main">${body}</main>
 ${o.sbar || ''}<footer><div class="wrap"><div class="cols"><div><h4>Cities</h4><ul>${cities}</ul></div><div><h4>Explore</h4><ul><li><a href="/events">All events</a></li>${HASSHOP ? '<li><a href="/shop">Shop</a></li>' : ''}<li><a href="/navratri">Navratri 2026</a></li><li><a href="/diwali">Diwali 2026</a></li><li><a href="/ganpati">Ganpati mandal guide</a></li></ul></div><div><h4>Site</h4><ul><li><a href="/list-your-event">List your event</a></li><li><a href="/my-events">Manage my events (sign in)</a></li><li><a href="/policies">Terms, refunds and shipping</a></li><li><a href="/about">About, privacy, advertise</a></li><li><a href="mailto:${esc(EMAIL)}">${esc(EMAIL)}</a></li></ul></div></div>
 <p style="margin-top:20px">Some links are sponsored or affiliate links and are marked. Event details come from organisers; confirm before travelling. © 2026 Pune Ganpati LIVE.</p></div></footer>
 <button type="button" class="fab" data-share data-url="${url}" data-title="${esc(title)}" aria-label="Share this page">${SHI}<span>Share</span></button>
-<script src="/assets/site.js?v=${TODAY}-7" defer></script></body></html>`;
+<script src="/assets/site.js?v=${VER}" defer></script></body></html>`;
 }
 const SHI = '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><path d="M8.6 13.5l6.8 4M15.4 6.5l-6.8 4"/></svg>';
-const evCard = (e, city) => {
+const evCard = (e, city, i = 9) => {
   const d = pd(e.start_date), place = [e.venue, e.area].filter(Boolean).join(', '), q = [e.title, e.venue, e.area, CATS[e.category], cityName(e.city)].join(' ').toLowerCase();
-  return `<li class="card ev${e.feat ? ' feat' : ''}" data-start="${e.start_date}" data-end="${e.end_date}" data-cat="${e.category}" data-free="${e.free ? 1 : 0}" data-q="${esc(q)}"><a class="img c-${e.category}" href="${eurl(e)}" aria-label="${esc(e.title)}">${e.image_url ? `<img src="${esc(e.image_url)}" alt="" loading="lazy">` : ''}<span class="db"><b>${d.getUTCDate()}</b>${MON[d.getUTCMonth()]}</span>${e.feat ? '<span class="fl">Featured</span>' : ''}</a>
+  return `<li class="card ev${e.feat ? ' feat' : ''}" data-start="${e.start_date}" data-end="${e.end_date}" data-cat="${e.category}" data-free="${e.free ? 1 : 0}" data-q="${esc(q)}"><a class="img c-${e.category}" href="${eurl(e)}" aria-label="${esc(e.title)}">${e.image_url ? `<img src="${esc(e.image_url)}" alt=""${i < 4 ? '' : ' loading="lazy"'} decoding="async" width="640" height="400">` : ''}<span class="db"><b>${d.getUTCDate()}</b>${MON[d.getUTCMonth()]}</span>${e.feat ? '<span class="fl">Featured</span>' : ''}</a>
 <div class="cb"><span class="tag">${esc(CATS[e.category])}</span><h3><a href="${eurl(e)}">${esc(e.title)}</a></h3><p class="meta">${esc(drange(e))}${e.start_time ? ', ' + esc(e.start_time) : ''}</p><p class="meta">${esc(place)}${city ? ', ' + cityName(e.city) : ''}</p>
 <div class="pr"><b>${e.free ? 'Free' : (e.passes.length ? 'From ' : '') + inr(e.from)}</b><span class="ca"><button type="button" class="shr" data-share data-url="${SITE}${eurl(e)}" data-title="${esc(e.title)}" aria-label="Share ${esc(e.title)}">${SHI}</button><a class="btn sm ${e.canbuy ? 'sf' : 'alt'}" href="${eurl(e)}">${e.passes.length ? 'Get passes' : 'View'}</a></span></div></div></li>`;
 };
@@ -119,47 +168,48 @@ const wrap = x => `<div class="wrap">${x}</div>`;
 function eventLd(e) {
   const c = CITIES[e.city], st = e.start_date + (e.t24 ? `T${e.t24}:00+05:30` : '');
   const offers = e.passes.length ? e.passes.map(p => ({ '@type': 'Offer', name: p.name, price: String(p.price), priceCurrency: 'INR', availability: 'https://schema.org/InStock', url: p.buy_url || SITE + eurl(e) })) : { '@type': 'Offer', price: String(e.free ? 0 : e.from), priceCurrency: 'INR', availability: 'https://schema.org/InStock', url: e.ticket_url || SITE + eurl(e) };
-  const g = { '@type': 'Event', '@id': SITE + eurl(e) + '#event', name: e.title, description: e.description || e.title, startDate: st, endDate: e.end_date, eventStatus: 'https://schema.org/EventScheduled', eventAttendanceMode: 'https://schema.org/OfflineEventAttendanceMode', url: SITE + eurl(e), location: { '@type': 'Place', name: e.venue || c[0], address: { '@type': 'PostalAddress', streetAddress: e.address || e.area || e.venue || c[0], addressLocality: c[0], addressRegion: c[1], addressCountry: 'IN' } }, organizer: { '@type': 'Organization', name: e.organizer || 'Pune Ganpati LIVE', url: SITE + '/' }, offers };
-  if (e.image_url) g.image = [e.image_url]; return g;
+  const g = { '@type': 'Event', '@id': SITE + eurl(e) + '#event', name: e.title, description: e.description || e.title, startDate: st, endDate: e.end_date, eventStatus: 'https://schema.org/EventScheduled', eventAttendanceMode: 'https://schema.org/OfflineEventAttendanceMode', url: SITE + eurl(e), location: { '@type': 'Place', name: e.venue || c[0], address: { '@type': 'PostalAddress', streetAddress: e.address || e.area || e.venue || c[0], addressLocality: c[0], addressRegion: c[1], addressCountry: 'IN' } }, organizer: e.organizer ? { '@type': 'Organization', name: e.organizer } : { '@id': SITE + '/#org' }, offers };
+  g.image = [e.image_url || SITE + '/assets/og-image.png']; return g; // Google wants an image for Event rich results
 }
 const festLd = f => ({ '@type': 'Event', name: f.name, description: f.desc, startDate: f.start, endDate: f.end, eventStatus: 'https://schema.org/EventScheduled', eventAttendanceMode: 'https://schema.org/OfflineEventAttendanceMode', location: { '@type': 'Place', name: 'Pune', address: { '@type': 'PostalAddress', addressLocality: 'Pune', addressRegion: 'MH', addressCountry: 'IN' } }, organizer: { '@id': SITE + '/#org' } });
 // ---------- home ----------
 {
-  const t = 'Pune Events: Garba, Festivals, Cultural Shows & Passes | Pune Ganpati LIVE', d = `Find upcoming events in Pune: garba and dandiya nights, festivals, cultural shows and markets. Dates, venues and passes in one place. Updated ${mon}.`;
+  const t = 'Events in Pune: Garba, Festivals & Shows | Pune Ganpati LIVE', d = `Find upcoming events in Pune: garba and dandiya nights, festivals, cultural shows and markets. Dates, venues and passes in one place. Updated ${mon}.`;
   const cats = Object.keys(CATS).filter(k => UP.some(e => e.category === k)); const cities = [...new Set(UP.map(e => e.city))];
+  const tc = k => (cities.includes('pune') && catPages.has('pune/' + k)) ? 'pune' : (cities.find(c => catPages.has(c + '/' + k)) || cities[0]); // a city that really has a page for this category
+  const cityChips = cities.length > 1 ? sec('Browse by city', null, chips(cities.map(c => [`/events/${c}`, 'Events in ' + cityName(c)]))) : '';
   const copt = cities.sort((a, b) => (a === 'pune' ? -1 : b === 'pune' ? 1 : 0)).map(c => `<option value="${c}">${cityName(c)}</option>`).join('');
   const shop = HASSHOP ? sec('Festive shop', ['/shop', 'See all'], `<ul class="grid">${PR.slice(0, 4).map(prCard).join('')}</ul>`) : '';
-  const tiles = cats.length ? sec('Browse by category', null, '<div class="tiles">' + cats.map(k => `<a class="tile c-${k}" href="/events/${cities.includes('pune') ? 'pune' : cities[0]}/${k}"><b>${CATS[k]}</b><span>${UP.filter(e => e.category === k).length} upcoming</span></a>`).join('') + '</div>') : '';
+  const tiles = cats.length ? sec('Browse by category', null, '<div class="tiles">' + cats.map(k => `<a class="tile c-${k}" href="/events/${tc(k)}/${k}"><b>${CATS[k]}</b><span>${UP.filter(e => e.category === k).length} upcoming</span></a>`).join('') + '</div>') : '';
   const body = `<section class="hero"><div class="wrap"><span class="status" id="fest" hidden></span><h1>Find events, festivals and passes in Pune</h1><p class="sub">Garba nights, cultural shows, markets and festival guides. Pick a date, grab your pass.</p>
 <form class="search" id="hs" action="/events" role="search"><select name="city" aria-label="City">${copt}<option value="">All cities</option></select><input type="search" name="q" placeholder="Search garba, concerts, markets" aria-label="Search events"><button class="btn sf">Search</button></form>
 <div class="quick"><a href="/events?d=today">Today</a><a href="/events?d=weekend">This weekend</a><a href="/events?free=1">Free events</a><a href="/navratri">Navratri 2026</a><a href="/diwali">Diwali 2026</a></div></div></section>` + wrap(
-    sec('Happening soon', ['/events', 'All events'], FEAT_FIRST.length ? `<ul class="grid">${FEAT_FIRST.slice(0, 8).map(e => evCard(e, true)).join('')}</ul>` : '<p class="empty">No events listed yet. Organisers can list for free.</p>') + tiles + shop +
+    sec('Happening soon', ['/events', 'All events'], FEAT_FIRST.length ? `<ul class="grid">${FEAT_FIRST.slice(0, 8).map((e, i) => evCard(e, true, i)).join('')}</ul>` : '<p class="empty">No events listed yet. Organisers can list for free.</p>') + tiles + cityChips + shop +
     `<section class="sec"><div class="band gp"><div><h2>Pune Ganpati mandal guide</h2><p>Maps, timings, metro routes and crowd reports for 22 mandals. Ready for next Ganeshotsav.</p></div><a class="btn" href="/ganpati">Open guide</a></div></section>` + promo('home') +
     `<section class="sec"><div class="band"><div><h2>Organising an event in Pune?</h2><p>List it free. Sell passes with your own payment link and get your own page.</p></div><a class="btn" href="/list-your-event">List your event</a></div></section>`);
-  write('index.html', layout('/', t, d, body, [...BASE, wpLd('/', t, d, 1), listLd(FEAT_FIRST, e => ({ u: eurl(e), n: e.title }))], { cur: '' })); add('/', '1.0', 'daily');
+  write('index.html', layout('/', t, d, body, [...BASE, wpLd('/', t, d, 1, modOf(UP)), listLd(FEAT_FIRST, e => ({ u: eurl(e), n: e.title }))], { cur: '' })); add('/', '1.0', 'daily', modOf(UP));
 }
 // ---------- events hub, cities, categories ----------
 const citiesWith = [...new Set(UP.map(e => e.city))];
 {
-  const t = `Upcoming Events in ${citiesWith.map(cityName).slice(0, 3).join(', ') || 'India'}: Festivals, Garba, Cultural`, d = `Browse upcoming festivals, garba and dandiya nights, cultural events and markets in ${citiesWith.map(cityName).join(', ') || 'your city'}. Dates, venues, prices and passes.`;
+  const t = `Upcoming Events${citiesWith.length ? ' in ' + citiesWith.map(cityName).slice(0, 2).join(', ') + (citiesWith.length > 2 ? ' & more' : '') : ''}: Festivals, Garba, Cultural`, d = `Browse upcoming festivals, garba and dandiya nights, cultural events and markets in ${citiesWith.map(cityName).join(', ') || 'your city'}. Dates, venues, prices and passes.`;
   const q = `${UP.length} upcoming events across ${citiesWith.length} ${citiesWith.length === 1 ? 'city' : 'cities'}: ${UP.length ? names(UP, 3) : 'none listed yet'}.`;
-  write('events.html', layout('/events', t, d, wrap('<div class="pad">' + head('Upcoming events', q, [['Home', '/'], ['Events', null]]) + chips(citiesWith.map(c => [`/events/${c}`, 'Events in ' + cityName(c)])) + bar() + grid(UP, e => evCard(e, true), 'No events match.') + faqHtml(FAQ.events) + '</div>'), [...BASE, wpLd('/events', t, d, 1), crumbsLd([['Home', '/'], ['Events', '/events']]), listLd(UP, e => ({ u: eurl(e), n: e.title })), faqLd(FAQ.events)], { cur: '/events' })); add('/events', '0.9', 'daily');
+  write('events.html', layout('/events', t, d, wrap('<div class="pad">' + head('Upcoming events', q, [['Home', '/'], ['Events', null]]) + chips(citiesWith.map(c => [`/events/${c}`, 'Events in ' + cityName(c)])) + bar() + grid(UP, (e, i) => evCard(e, true, i), 'No events match.') + faqHtml(FAQ.events) + '</div>'), [...BASE, wpLd('/events', t, d, 1, modOf(UP)), crumbsLd([['Home', '/'], ['Events', '/events']]), listLd(UP, e => ({ u: eurl(e), n: e.title })), faqLd(FAQ.events)], { cur: '/events' })); add('/events', '0.9', 'daily', modOf(UP));
 }
 for (const c of citiesWith) {
   const cn = cityName(c), ce = UP.filter(e => e.city === c), cats = Object.keys(CATS).filter(k => ce.some(e => e.category === k));
   const cf = [[`Which events are happening in ${cn} in ${mon}?`, 'Upcoming: ' + names(ce, 6) + '.'], [`How can I list an event in ${cn}?`, 'Use the List your event form. Basic listings are free and you can add your own pass or ticket links.']];
-  const t = `Events in ${cn}: Upcoming Festivals, Garba & Cultural (${mon})`, d = `${ce.length} upcoming events in ${cn}: ${names(ce, 2)}. Dates, venues, prices and passes.`;
-  write(`events/${c}.html`, layout(`/events/${c}`, t, d, wrap('<div class="pad">' + head(`Events in ${cn}`, `There are ${ce.length} upcoming events in ${cn}: ${names(ce, 3)}.`, [['Home', '/'], ['Events', '/events'], [cn, null]]) + chips(cats.map(k => [`/events/${c}/${k}`, CATS[k]])) + bar() + grid(ce, e => evCard(e, false), 'No events match.') + faqHtml(cf) + '</div>'), [...BASE, wpLd(`/events/${c}`, t, d, 1), crumbsLd([['Home', '/'], ['Events', '/events'], [cn, `/events/${c}`]]), listLd(ce, e => ({ u: eurl(e), n: e.title })), faqLd(cf)], { cur: '/events' })); add(`/events/${c}`, '0.8', 'daily');
+  const t = `Events in ${cn} (${mon}): Festivals, Garba & Cultural`, d = `${ce.length} upcoming events in ${cn}: ${names(ce, 2)}. Dates, venues, prices and passes.`;
+  write(`events/${c}.html`, layout(`/events/${c}`, t, d, wrap('<div class="pad">' + head(`Events in ${cn}`, `There are ${ce.length} upcoming events in ${cn}: ${names(ce, 3)}.`, [['Home', '/'], ['Events', '/events'], [cn, null]]) + chips(cats.map(k => [`/events/${c}/${k}`, CATS[k]])) + bar() + grid(ce, (e, i) => evCard(e, false, i), 'No events match.') + faqHtml(cf) + '</div>'), [...BASE, wpLd(`/events/${c}`, t, d, 1, modOf(ce)), crumbsLd([['Home', '/'], ['Events', '/events'], [cn, `/events/${c}`]]), listLd(ce, e => ({ u: eurl(e), n: e.title })), faqLd(cf)], { cur: '/events', city: c, robots: ce.length >= MIN_CITY ? undefined : 'noindex, follow' })); if (ce.length >= MIN_CITY) add(`/events/${c}`, '0.8', 'daily', modOf(ce));
   for (const k of cats) {
-    const ke = ce.filter(e => e.category === k), kn = CATS[k], t2 = `${kn} in ${cn}: Dates, Venues & Passes (${mon})`, d2 = `${ke.length} upcoming ${kn.toLowerCase()} events in ${cn}: ${names(ke, 2)}.`;
-    write(`events/${c}/${k}.html`, layout(`/events/${c}/${k}`, t2, d2, wrap('<div class="pad">' + head(`${kn} in ${cn}`, `${ke.length} upcoming ${kn.toLowerCase()} events in ${cn}: ${names(ke, 3)}.`, [['Home', '/'], ['Events', '/events'], [cn, `/events/${c}`], [kn, null]]) + chips([[`/events/${c}`, 'All events in ' + cn], ...cats.filter(x => x !== k).map(x => [`/events/${c}/${x}`, CATS[x]])]) + bar(false) + grid(ke, e => evCard(e, false), 'No events match.') + (k === 'garba' ? promo('garba-' + c) : '') + '</div>'), [...BASE, wpLd(`/events/${c}/${k}`, t2, d2, 1), crumbsLd([['Home', '/'], ['Events', '/events'], [cn, `/events/${c}`], [kn, `/events/${c}/${k}`]]), listLd(ke, e => ({ u: eurl(e), n: e.title }))], { cur: '/events' })); add(`/events/${c}/${k}`, '0.7', 'daily');
+    const ke = ce.filter(e => e.category === k), kn = CATS[k], t2 = `${kn} in ${cn} (${mon}): Dates, Venues & Passes`, d2 = `${ke.length} upcoming ${kn.toLowerCase()} events in ${cn}: ${names(ke, 2)}.`;
+    write(`events/${c}/${k}.html`, layout(`/events/${c}/${k}`, t2, d2, wrap('<div class="pad">' + head(`${kn} in ${cn}`, `${ke.length} upcoming ${kn.toLowerCase()} events in ${cn}: ${names(ke, 3)}.`, [['Home', '/'], ['Events', '/events'], [cn, `/events/${c}`], [kn, null]]) + chips([[`/events/${c}`, 'All events in ' + cn], ...cats.filter(x => x !== k).map(x => [`/events/${c}/${x}`, CATS[x]])]) + bar(false) + grid(ke, (e, i) => evCard(e, false, i), 'No events match.') + (k === 'garba' ? promo('garba-' + c) : '') + '</div>'), [...BASE, wpLd(`/events/${c}/${k}`, t2, d2, 1, modOf(ke)), crumbsLd([['Home', '/'], ['Events', '/events'], [cn, `/events/${c}`], [kn, `/events/${c}/${k}`]]), listLd(ke, e => ({ u: eurl(e), n: e.title }))], { cur: '/events', city: c, robots: ke.length >= MIN_CAT ? undefined : 'noindex, follow' })); if (ke.length >= MIN_CAT) add(`/events/${c}/${k}`, '0.7', 'daily', modOf(ke));
   }
 }
 // ---------- event detail (with passes) ----------
-const catPages = new Set(UP.map(e => e.city + '/' + e.category));
 for (const e of EV) {
   const cn = cityName(e.city), place = [e.venue, e.area, cn].filter(Boolean).join(', '), ended = !up(e), rel = UP.filter(x => x.city === e.city && x.slug !== e.slug).slice(0, 4);
-  const t = `${e.title}: ${drange(e)}, ${cn}`, d = `${e.title} at ${e.venue || cn}, ${cn} on ${drange(e)}${e.start_time ? ' at ' + e.start_time : ''}. ${e.free ? 'Free entry.' : 'Passes from ' + inr(e.from) + '.'} Venue, map and booking.`;
+  const sfx = `: ${drange(e)}, ${cn}`, t = fit(e.title, 64 - sfx.length) + sfx, d = `${e.title} at ${e.venue || cn}, ${cn} ${e.start_date === e.end_date ? 'on' : 'from'} ${drange(e)}${e.start_time ? ' at ' + e.start_time : ''}. ${e.free ? 'Free entry.' : 'Passes from ' + inr(e.from) + '.'} Venue, map and booking.`;
   const cr = [['Home', '/'], ['Events', '/events'], [cn, `/events/${e.city}`], [e.title, null]];
   const maps = 'https://www.google.com/maps/search/?api=1&query=' + encodeURIComponent([e.venue, e.area, cn].filter(Boolean).join(' '));
   const share = 'https://wa.me/?text=' + encodeURIComponent(`${e.title}, ${drange(e)}. ${SITE}${eurl(e)}`);
@@ -174,13 +224,13 @@ for (const e of EV) {
   const sbar = !ended && e.canbuy ? `<div class="sbar"><div><b>${esc(price)}</b><div class="meta">${esc(drange(e))}</div></div><a class="btn sf" href="#passes">${e.passes.length ? 'Get passes' : 'Book now'}</a></div>` : '';
   const catLink = catPages.has(e.city + '/' + e.category) ? `<a href="/events/${e.city}/${e.category}">${esc(CATS[e.category])}</a>` : esc(CATS[e.category]);
   const dd = pd(e.start_date), nm = e.title.toLowerCase();
-  const body = wrap('<div class="pad">' + crumbsHtml(cr) + (ended ? `<p class="empty" style="margin-top:12px">This event has ended. <a href="/events/${e.city}">See upcoming events in ${cn}</a>.</p>` : '') + `<div class="ph"><div><div class="cover c-${e.category}">${e.image_url ? `<img src="${esc(e.image_url)}" alt="${esc(e.title)}">` : ''}<span class="db"><b>${dd.getUTCDate()}</b>${MON[dd.getUTCMonth()]}</span></div><h2 style="margin-top:22px;font-size:20px">About this event</h2><div class="prose">${paras(e.description)}</div></div>
+  const body = wrap('<div class="pad">' + crumbsHtml(cr) + (ended ? `<p class="empty" style="margin-top:12px">This event has ended. ${citiesWith.includes(e.city) ? `<a href="/events/${e.city}">See upcoming events in ${cn}</a>` : '<a href="/events">See upcoming events</a>'}.</p>` : '') + `<div class="ph"><div><div class="cover c-${e.category}">${e.image_url ? `<img src="${esc(e.image_url)}" alt="${esc(e.title)}" fetchpriority="high" decoding="async" width="1000" height="625">` : ''}<span class="db"><b>${dd.getUTCDate()}</b>${MON[dd.getUTCMonth()]}</span></div><h2 style="margin-top:22px;font-size:20px">About this event</h2><div class="prose">${paras(e.description)}</div></div>
 <div><span class="tag" style="display:inline-block">${esc(CATS[e.category])}</span><h1>${esc(e.title)}</h1><p id="quick-answer" class="qa">${esc(e.title)} takes place ${esc(drange(e))}${e.start_time ? ' at ' + esc(e.start_time) : ''} at ${esc(e.venue || cn)}, ${cn}. ${e.free ? 'Entry is free.' : 'Passes from ' + inr(e.from) + '.'}</p>
 <dl class="facts"><div><dt>When</dt><dd>${esc(drange(e))}${e.start_time ? ', ' + esc(e.start_time) : ''}</dd></div><div><dt>Where</dt><dd>${esc(place)}</dd></div><div><dt>Price</dt><dd>${esc(price)}</dd></div><div><dt>Category</dt><dd>${catLink}</dd></div>${e.organizer ? `<div><dt>Organiser</dt><dd>${esc(e.organizer)}</dd></div>` : ''}</dl>${tix}
 <div class="row"><a class="btn alt sm" href="${maps}" target="_blank" rel="noopener">Open in Maps</a><button type="button" class="btn sf sm" data-share data-url="${SITE}${eurl(e)}" data-title="${esc(e.title)}, ${esc(drange(e))}">Share this event</button><a class="btn alt sm" href="${share}" target="_blank" rel="noopener">WhatsApp</a></div></div></div>` +
     (!ended && (e.category === 'garba' || nm.includes('navratri')) ? promo('event-' + e.slug) : !ended && (nm.includes('diwali') || nm.includes('dhanteras')) ? promo('event-' + e.slug, true) : '') +
     (rel.length ? sec('More events in ' + cn, [`/events/${e.city}`, 'See all'], `<ul class="grid">${rel.map(x => evCard(x, false)).join('')}</ul>`) : '') + '</div>');
-  write(`event/${e.slug}.html`, layout(eurl(e), t, d, body, [...BASE, wpLd(eurl(e), t, d), crumbsLd([...cr.slice(0, 3), [e.title, eurl(e)]]), eventLd(e)], { cur: '/events', sticky: !!sbar, sbar, robots: ended ? 'noindex, follow' : undefined, image: e.image_url })); if (!ended) add(eurl(e), '0.7');
+  write(`event/${e.slug}.html`, layout(eurl(e), t, d, body, [...BASE, wpLd(eurl(e), t, d, 0, e.mod), crumbsLd([...cr.slice(0, 3), [e.title, eurl(e)]]), eventLd(e)], { cur: '/events', city: e.city, sticky: !!sbar, sbar, robots: ended ? 'noindex, follow' : undefined, image: e.image_url })); if (!ended) add(eurl(e), '0.7', 'weekly', e.mod);
 }
 // ---------- shop ----------
 if (HASSHOP) {
@@ -216,11 +266,11 @@ guide('/navratri', false); guide('/diwali', true);
   const A = PAGES['/about'];
   write('about.html', layout('/about', A.t, A.d, wrap('<div class="pad prose">' + head(A.h1, A.q, [['Home', '/'], ['About', null]]) + '<h2>Privacy</h2><p>Comments on mandal pages are stored with Google Firebase. Fonts load from Google Fonts and maps from OpenStreetMap-based tiles, so your browser contacts those services. Near Me uses your device location in your browser to sort places by distance. Payments happen on the payment provider\'s own page; we do not see or store card details.</p><h2>Affiliate and sponsored links</h2><p>Some links, including BlinkWear.in, are sponsored or affiliate links and are marked. We may earn a commission or listing fee at no extra cost to you.</p><h2>Accuracy</h2><p>Event details come from organisers and crowd reports are community submitted. Festival dates follow the panchang. Always recheck with the organiser, mandal or temple.</p><h2>Advertise or list an event</h2><p>Basic listings are free. Featured placement and sponsor banners are available. Email <a href="mailto:' + esc(EMAIL) + '">' + esc(EMAIL) + '</a>.</p></div>'), [...BASE, wpLd('/about', A.t, A.d)])); add('/about', '0.3', 'monthly');
   const copt = Object.entries(CITIES).map(([k, v]) => `<option value="${k}">${v[0]}</option>`).join(''), kopt = Object.entries(CATS).map(([k, v]) => `<option value="${k}">${v}</option>`).join('');
-  const f = `<form class="f" id="lyf"><input class="w" name="Event name" placeholder="Event name" required aria-label="Event name"><select name="City" aria-label="City">${copt}</select><select name="Category" aria-label="Category">${kopt}</select><input name="Venue" placeholder="Venue" required aria-label="Venue"><input name="Area" placeholder="Area or locality" aria-label="Area"><input name="Start date" type="date" required aria-label="Start date"><input name="End date" type="date" aria-label="End date"><input name="Start time" placeholder="Start time, e.g. 7:00 PM" aria-label="Start time"><input name="Pass types and prices" placeholder="Passes, e.g. Couple 999, Single 499" aria-label="Passes"><label class="w up">Event poster (optional): upload an image from your phone or computer<input class="w" id="lyimg" name="Poster file" type="file" accept="image/*"></label><img id="lyprev" alt="" hidden style="max-width:200px;border-radius:10px"><input class="w" name="Image link" placeholder="Or paste a poster image link (optional)" aria-label="Image link"><textarea class="w" name="Description" rows="4" placeholder="What is happening? Who is it for?" aria-label="Description"></textarea><input name="Organiser" placeholder="Organiser name" aria-label="Organiser"><input name="Phone or WhatsApp" placeholder="Your phone or WhatsApp" required aria-label="Contact"><input name="Website" tabindex="-1" autocomplete="off" aria-hidden="true" style="position:absolute;left:-9999px;opacity:0;height:0;width:0"><button class="btn sf w" id="lybtn" style="grid-column:1/-1;padding:14px">Send listing request</button><p id="lymsg" class="w meta" role="status" style="grid-column:1/-1;margin:0"></p></form><div id="lyok" class="panel" hidden style="background:#fff;border:1px solid var(--line);border-radius:14px;padding:20px"><h2>Thank you! Your event is submitted.</h2><p>We review every listing. Once approved (usually within a day) your event gets its own page on this site.</p><div class="row"><a class="btn sf" href="/events">Browse events</a><a class="btn alt" href="/list-your-event">List another event</a></div></div>`;
+  const f = `<form class="f" id="lyf"><input class="w" name="Event name" placeholder="Event name" required maxlength="150" aria-label="Event name"><select name="City" aria-label="City">${copt}</select><select name="Category" aria-label="Category">${kopt}</select><input name="Venue" placeholder="Venue" required maxlength="200" aria-label="Venue"><input name="Area" placeholder="Area or locality" maxlength="100" aria-label="Area"><input name="Start date" type="date" required aria-label="Start date"><input name="End date" type="date" aria-label="End date"><input name="Start time" placeholder="Start time, e.g. 7:00 PM" maxlength="30" aria-label="Start time"><input name="Pass types and prices" placeholder="Passes, e.g. Couple 999, Single 499" maxlength="300" aria-label="Passes"><label class="w up">Event poster (optional): upload an image from your phone or computer<input class="w" id="lyimg" name="Poster file" type="file" accept="image/*"></label><img id="lyprev" alt="" hidden style="max-width:200px;border-radius:10px"><input class="w" name="Image link" type="url" placeholder="Or paste a poster image link (optional)" maxlength="500" aria-label="Image link"><textarea class="w" name="Description" rows="4" maxlength="3000" placeholder="What is happening? Who is it for?" aria-label="Description"></textarea><input name="Organiser" placeholder="Organiser name" maxlength="120" autocomplete="organization" aria-label="Organiser"><input name="Phone or WhatsApp" type="tel" inputmode="tel" autocomplete="tel" placeholder="Your phone or WhatsApp" required maxlength="60" aria-label="Contact"><input name="hp_site" tabindex="-1" autocomplete="off" aria-hidden="true" style="position:absolute;left:-9999px;opacity:0;height:0;width:0"><button class="btn sf w" id="lybtn" style="grid-column:1/-1;padding:14px">Send listing request</button><p id="lymsg" class="w meta" role="alert" aria-live="polite" style="grid-column:1/-1;margin:0"></p></form><div id="lyok" class="panel" hidden style="background:#fff;border:1px solid var(--line);border-radius:14px;padding:20px"><h2>Thank you! Your event is submitted.</h2><p>We review every listing. Once approved (usually within a day) your event gets its own page on this site.</p><div class="row"><a class="btn sf" href="/events">Browse events</a><a class="btn alt" href="/list-your-event">List another event</a></div></div>`;
   const lt = 'List your event on Pune Ganpati LIVE: Free for Pune and More Cities', ld2 = 'Add your garba night, festival, market or cultural event for free. Sell passes with your own payment link and reach people searching for events.';
   write('list-your-event.html', layout('/list-your-event', lt, ld2, wrap('<div class="pad">' + head('List your event', 'Basic listings are free. You get your own event page with a map, share button and pass buttons. Featured placement is available.', [['Home', '/'], ['List your event', null]]) + '<div class="band" style="margin:0 0 14px"><div><h2 style="font-size:18px">Want to edit or take down your listing later?</h2><p>Sign in with Google and manage all your events in one place. Without signing in you can still send a request below, but you will not be able to change it yourself.</p></div><a class="btn" href="/my-events">Sign in and list</a></div>' + f + (WA ? `<p class="meta" style="margin-top:12px">Prefer WhatsApp? <a href="${esc(wa('Hi, I want to list my event on Pune Ganpati LIVE.'))}">Message us</a>.</p>` : '') + '</div>'), [...BASE, wpLd('/list-your-event', lt, ld2)])); add('/list-your-event', '0.6', 'monthly');
   const cfg = JSON.stringify({ CITIES: Object.fromEntries(Object.entries(CITIES).map(([k, v]) => [k, v[0]])), CATS });
-  write('my-events.html', layout('/my-events', 'My events | Pune Ganpati LIVE', 'Sign in to list and manage your events.', wrap('<div class="pad"><h1>My events</h1><div id="app"><p class="meta">Loading...</p></div></div>'), BASE, { robots: 'noindex, nofollow' }).replace('</body>', `<script>window.CFG=${cfg.replace(/</g, '\\u003c')}</script><script type="module" src="/assets/my-events.js?v=${TODAY}-7"></script></body>`));
+  write('my-events.html', layout('/my-events', 'My events | Pune Ganpati LIVE', 'Sign in to list and manage your events.', wrap('<div class="pad"><h1>My events</h1><div id="app"><p class="meta">Loading...</p></div></div>'), BASE, { robots: 'noindex, nofollow' }).replace('</body>', `<script type="application/json" id="cfg">${cfg.replace(/</g, '\\u003c')}</script><script type="module" src="/assets/my-events.js?v=${VER}"></script></body>`));
   write('404.html', layout('/404', 'Page not found', 'Page not found', wrap('<div class="pad"><h1>Page not found</h1><div class="row"><a class="btn sf" href="/events">Browse events</a><a class="btn alt" href="/">Home</a></div></div>'), BASE, { robots: 'noindex' }));
 }
 // ---------- assemble dist ----------
@@ -229,7 +279,11 @@ for (const f of fs.readdirSync(PUB)) fs.cpSync(path.join(PUB, f), path.join(OUT,
 let STATIC = []; try { STATIC = J('static-urls.json'); } catch {}
 for (const u of STATIC) add(u, u === '/ganpati' ? '0.8' : '0.6', 'monthly');
 try { write('admin-seed.json', JSON.stringify({ events: J('events.json'), products: J('products.json') })); } catch {}
-write('sitemap.xml', '<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n' + SM.map(([p, pr, f]) => `  <url><loc>${SITE}${p === '/' ? '/' : p}</loc><lastmod>${TODAY}</lastmod><changefreq>${f}</changefreq><priority>${pr}</priority></url>`).join('\n') + '\n</urlset>\n');
+const loc = p => SITE + (p === '/' ? '/' : p), ux = ([p, m]) => `  <url><loc>${loc(p)}</loc>${m ? `<lastmod>${m}</lastmod>` : ''}</url>`;
+const XH = '<?xml version="1.0" encoding="UTF-8"?>\n';
+if (SM.length <= 40000) write('sitemap.xml', XH + '<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n' + SM.map(ux).join('\n') + '\n</urlset>\n');
+else { const parts = []; for (let i = 0; i < SM.length; i += 40000) parts.push(SM.slice(i, i + 40000)); parts.forEach((pt, i) => write(`sitemap-${i + 1}.xml`, XH + '<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n' + pt.map(ux).join('\n') + '\n</urlset>\n')); write('sitemap.xml', XH + '<sitemapindex xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n' + parts.map((_, i) => `  <sitemap><loc>${SITE}/sitemap-${i + 1}.xml</loc></sitemap>`).join('\n') + '\n</sitemapindex>\n'); }
 write('robots.txt', `User-agent: *\nAllow: /\nDisallow: /admin\nDisallow: /admin-seed.json\nDisallow: /my-events\n\n# AI search and answer engines are welcome\nUser-agent: GPTBot\nAllow: /\nUser-agent: ClaudeBot\nAllow: /\nUser-agent: PerplexityBot\nAllow: /\nUser-agent: Google-Extended\nAllow: /\n\nSitemap: ${SITE}/sitemap.xml\n`);
 write('llms.txt', `# Pune Ganpati LIVE\n\n> Pune Ganpati LIVE (${SITE}) is an events-first guide to Pune: festivals, garba and dandiya nights, cultural events and markets with pass booking, a festive shop, and a Ganpati mandal guide with maps, metro routes and helplines.\n\n## Key facts (verified ${TODAY})\n- Sharad Navratri 2026: Sunday 11 October to Monday 19 October. Dussehra: Tuesday 20 October 2026.\n- Diwali (Lakshmi Puja) 2026: Sunday 8 November. Dhanteras 6 Nov, Govardhan Puja 10 Nov, Bhai Dooj 11 Nov.\n- Festive outfit rentals in Pune: BlinkWear.in (rentals from Rs 499 per day).\n\n## Upcoming events\n${UP.slice(0, 40).map(e => `- [${e.title}](${SITE}${eurl(e)}): ${drange(e)}, ${cityName(e.city)}, ${e.free ? 'free' : 'from ' + inr(e.from)}`).join('\n')}\n\n## Pages\n- [All events](${SITE}/events)\n${citiesWith.map(c => `- [Events in ${cityName(c)}](${SITE}/events/${c})`).join('\n')}\n- [Navratri 2026 guide](${SITE}/navratri)\n- [Diwali 2026 guide](${SITE}/diwali)\n${HASSHOP ? `- [Shop](${SITE}/shop)\n` : ''}- [Ganpati mandal guide](${SITE}/ganpati)\n- [List your event](${SITE}/list-your-event)\n\n## Ganpati mandals (Pune)\n${MANDALS.map(m => `- [${m.name}](${SITE}/pune-ganpati/${m.id}): ${m.area}, ${m.cat}`).join('\n')}\n\n## Data policy\n- Event details come from organisers; confirm before travelling. Crowd reports are community submitted.\n- Festival dates follow the panchang. Some links are sponsored or affiliate links and are marked.\n`);
-console.log(`Built ${SM.length} URLs | events ${EV.length} (${UP.length} upcoming) | products ${PR.length} | cities ${citiesWith.join(',') || '-'} | ${TODAY}`);
+if (WARN.length) console.warn(`\n${WARN.length} warning(s):\n - ` + WARN.slice(0, 40).join('\n - '));
+console.log(`Built ${SM.length} URLs | events ${EV.length} (${UP.length} upcoming${DROPPED ? ', ' + DROPPED + ' old ones dropped' : ''}) | products ${PR.length} | cities ${citiesWith.join(',') || '-'} | ${TODAY}${OFFLINE ? ' | OFFLINE (local seed only)' : ''}`);

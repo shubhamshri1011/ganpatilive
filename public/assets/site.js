@@ -72,29 +72,42 @@
       say('Preparing image...');
       compress(file).then(function (d) { imgData = d; prev.src = d; prev.hidden = false; say(''); }).catch(function () { say('Could not read that image. Try a different one or paste a link.', 1); fileIn.value = ''; });
     });
+    var COOL = 60000, lastKey = 'pglLastSub';
+    var getLast = function () { try { return +localStorage.getItem(lastKey) || 0; } catch (e) { return 0; } };
+    var setLast = function () { try { localStorage.setItem(lastKey, String(Date.now())); } catch (e) { } };
+    var withTimeout = function (p, ms) { return Promise.race([p, new Promise(function (_, rej) { setTimeout(function () { rej(new Error('timeout')); }, ms); })]); };
     f.addEventListener('submit', function (e) {
       e.preventDefault(); var d = new FormData(f);
-      if (d.get('Website')) return; /* honeypot */
-      var st = d.get('Start date'), en = d.get('End date') || st;
+      if (d.get('hp_site')) return; /* honeypot: real people never fill this hidden field */
+      var title = String(d.get('Event name') || '').trim(), venue = String(d.get('Venue') || '').trim(), phone = String(d.get('Phone or WhatsApp') || '').trim();
+      var st = d.get('Start date'), en = d.get('End date') || st, img = String(d.get('Image link') || '').trim();
+      var today = iso(new Date()), digits = phone.replace(/\D/g, '');
+      if (title.length < 3) { say('Please write the event name (at least 3 letters).', 1); return; }
+      if (!venue) { say('Please write the venue.', 1); return; }
+      if (!st) { say('Please choose the start date.', 1); return; }
       if (en < st) { say('End date cannot be before the start date.', 1); return; }
+      if (en < today) { say('This event has already ended. Please list upcoming events only.', 1); return; }
+      if (digits.length < 8 || digits.length > 15) { say('Please enter a valid phone or WhatsApp number (it is never shown publicly).', 1); return; }
+      if (img && !/^https?:\/\//i.test(img)) { say('The poster link must start with http:// or https://', 1); return; }
+      if (Date.now() - getLast() < COOL) { say('Please wait a minute before sending another request.', 1); return; }
       btn.disabled = true; say('Sending...');
       var cat = d.get('Category'), city = d.get('City');
       var rec = {
-        title: String(d.get('Event name')).trim().slice(0, 150), city: city, category: cat, venue: String(d.get('Venue')).trim().slice(0, 200),
+        title: title.slice(0, 150), city: city, category: cat, venue: venue.slice(0, 200),
         area: String(d.get('Area') || '').trim().slice(0, 100), start_date: st, end_date: en, start_time: String(d.get('Start time') || '').trim().slice(0, 30),
-        passes_text: String(d.get('Pass types and prices') || '').trim().slice(0, 300), image_url: String(d.get('Image link') || '').trim().slice(0, 500),
+        passes_text: String(d.get('Pass types and prices') || '').trim().slice(0, 300), image_url: img.slice(0, 500),
         image_data: imgData, description: String(d.get('Description') || '').trim().slice(0, 3000), organizer: String(d.get('Organiser') || '').trim().slice(0, 120),
-        contact: String(d.get('Phone or WhatsApp')).trim().slice(0, 60), status: 'pending'
+        contact: phone.slice(0, 60), status: 'pending'
       };
       var V = 'https://www.gstatic.com/firebasejs/11.6.1/';
-      Promise.all([import(V + 'firebase-app.js'), import(V + 'firebase-firestore.js')]).then(function (m) {
+      withTimeout(Promise.all([import(V + 'firebase-app.js'), import(V + 'firebase-firestore.js')]).then(function (m) {
         var app = m[0].initializeApp({ apiKey: 'AIzaSyAXbMPHQDSN-KKoS2OUEegwuapwzXwM-Ek', authDomain: 'puneganpatilive.firebaseapp.com', projectId: 'puneganpatilive', appId: '1:848829850195:web:c3b14375d19c5689cd9ca6' }, 'pub');
         var db = m[1].getFirestore(app); rec.createdAt = m[1].serverTimestamp();
         return m[1].addDoc(m[1].collection(db, 'submissions'), rec);
-      }).then(function () {
-        f.hidden = true; document.getElementById('lyok').hidden = false; window.scrollTo(0, 0);
+      }), 25000).then(function () {
+        setLast(); f.hidden = true; document.getElementById('lyok').hidden = false; window.scrollTo(0, 0);
       }).catch(function () {
-        btn.disabled = false; say('Could not send right now. Please try again, or message us on WhatsApp.', 1);
+        btn.disabled = false; say('Could not send right now. Please check your internet and try again, or message us on WhatsApp.', 1);
       });
     });
   }

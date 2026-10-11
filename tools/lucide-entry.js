@@ -1,0 +1,3 @@
+import { createIcons, AlertTriangle, ArrowRight, Bus, ChevronRight, Footprints, Grid, Home, Hospital, Info, List, Loader2, Map, MapPin, Navigation, ParkingCircle, Phone, PhoneCall, Search, SearchX, Send, Share2, Shield, ShieldAlert, ShieldCheck, Sparkles, TrainFront, Toilet, Train, Users, X } from 'lucide';
+const icons = { AlertTriangle, ArrowRight, Bus, ChevronRight, Footprints, Grid, Home, Hospital, Info, List, Loader2, Map, MapPin, Navigation, ParkingCircle, Phone, PhoneCall, Search, SearchX, Send, Share2, Shield, ShieldAlert, ShieldCheck, Sparkles, Subway: TrainFront, Toilet, Train, Users, X };
+window.lucide = { createIcons: (o) => createIcons(Object.assign({ icons }, o || {})) };
