@@ -1,1 +1,12 @@
-{ "name": "puneganpatilive", "private": true, "type": "module", "scripts": { "build": "node build.mjs", "test": "node --test tests/parse-event.test.mjs" }, "engines": { "node": ">=18" } }
+{
+  "name": "puneganpatilive",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "build": "node build.mjs",
+    "test": "node --test tests/parse-event.test.mjs tests/store-core.test.mjs tests/extract-product.test.mjs tests/api-meesho.test.mjs"
+  },
+  "engines": {
+    "node": ">=18"
+  }
+}

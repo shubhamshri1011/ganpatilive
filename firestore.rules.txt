@@ -97,6 +97,51 @@ service cloud.firestore {
       allow write: if isAdmin();
     }
 
+    // ---------- 9Store: supplier cost + source link (ADMIN ONLY, never public) ----------
+    match /productPrivate/{id} {
+      allow read, write: if isAdmin();
+    }
+
+    // ---------- 9Store: customer orders (prepaid by UPI) ----------
+    // The order id is a random 20 character id that only the customer (and admin) knows, so anyone holding the link can read that one order.
+    // Nobody can list or search orders except the admin. Customers can create an order and later attach their UPI reference once.
+    // Delivery must equal the delivery_fee in settings/store (Rs 80 if not set) and total must be subtotal + delivery.
+    // The admin panel also re-checks the amount against live product prices before you confirm payment.
+    match /orders/{id} {
+      allow get: if true;
+      allow list: if isAdmin();
+      allow create: if id.matches('^[A-Za-z0-9]{20}$')
+          && request.resource.data.keys().hasOnly(['items', 'subtotal', 'delivery', 'total', 'name', 'phone', 'email', 'addr1', 'addr2', 'city', 'state', 'pincode', 'note', 'status', 'code', 'createdAt'])
+          && request.resource.data.keys().hasAll(['items', 'subtotal', 'delivery', 'total', 'name', 'phone', 'addr1', 'city', 'state', 'pincode', 'status', 'code', 'createdAt'])
+          && request.resource.data.status == 'awaiting_payment'
+          && request.resource.data.createdAt == request.time
+          && request.resource.data.items is list
+          && request.resource.data.items.size() >= 1 && request.resource.data.items.size() <= 40
+          && request.resource.data.subtotal is number && request.resource.data.subtotal > 0 && request.resource.data.subtotal <= 500000
+          && request.resource.data.delivery == (exists(/databases/$(database)/documents/settings/store) ? get(/databases/$(database)/documents/settings/store).data.get('delivery_fee', 80) : 80)
+          && request.resource.data.total == request.resource.data.subtotal + request.resource.data.delivery
+          && str(request.resource.data, 'name', 3, 80)
+          && request.resource.data.get('phone', '').matches('^[6-9][0-9]{9}$')
+          && str(request.resource.data, 'email', 0, 120)
+          && str(request.resource.data, 'addr1', 6, 160)
+          && str(request.resource.data, 'addr2', 0, 160)
+          && str(request.resource.data, 'city', 2, 60)
+          && str(request.resource.data, 'state', 2, 60)
+          && request.resource.data.get('pincode', '').matches('^[1-9][0-9]{5}$')
+          && str(request.resource.data, 'note', 0, 300)
+          && str(request.resource.data, 'code', 8, 8);
+      // customer: only "I have paid" (status -> payment_submitted, with UPI reference and optional screenshot). Admin: everything.
+      allow update: if isAdmin()
+          || (resource.data.status in ['awaiting_payment', 'payment_failed']
+              && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['status', 'utr', 'proof_image', 'updatedAt'])
+              && request.resource.data.status == 'payment_submitted'
+              && str(request.resource.data, 'utr', 8, 30)
+              && request.resource.data.utr.matches('^[A-Za-z0-9]+$')
+              && str(request.resource.data, 'proof_image', 0, 450000)
+              && request.resource.data.updatedAt == request.time);
+      allow delete: if isAdmin();
+    }
+
     // site settings: public read (WhatsApp number, contact email, flags), admin write
     match /settings/{id} {
       allow read: if true;

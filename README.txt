@@ -58,3 +58,37 @@ ORGANISER PORTAL (/my-events)
 
 SHARE
 - Har page par "Share" button (phone par native share, computer par WhatsApp/Telegram/Facebook/X/Email/Copy link), har event card par share icon.
+
+9STORE (online shop, prepaid UPI) : NAYA
+=========================================
+Shop ka naam ab 9Store hai (/9store). Purane /shop links apne aap /9store par jate hain.
+
+EK BAAR SETUP (sirf ye 3 kaam)
+1. Firestore rules: firestore.rules.txt ka POORA text Firebase Console > Firestore > Rules mein paste karke Publish karo.
+   (Isme naye "orders" aur "productPrivate" rules hain. Ye na karo to customer order save nahi hoga.)
+2. /admin kholo > "9Store settings" tab: apna UPI ID daalo (e.g. name@okhdfcbank), delivery charge (default Rs 80), Save.
+   Neeche "Test your UPI QR" se QR scan karke dekho ki sahi account khul raha hai.
+3. Vercel par ye deploy hone ke baad /api/meesho chalega (admin ke product import ke liye). Kuch aur set karne ki zaroorat nahi.
+   Agar domain puneganpatilive.in se alag ho to Vercel > Settings > Environment Variables mein SITE_URL daalo.
+
+PRODUCT KAISE DAALNA HAI
+- /admin > "9Store products" > + New product.
+- Meesho product ka link paste karo > Fetch. Naam, photos, sizes aur Meesho price (aapka cost) bhar jata hai.
+  Link na chale (Meesho kabhi kabhi bot ko rok deta hai) to form haath se bhar do: photos upload kar sakte ho.
+- "Profit": flat Rs ya percent daalo, selling price apne aap ban jata hai (ya khud likh do). Aapka cost aur profit PRIVATE hai, public site par kabhi nahi jata.
+- Save > upar "Publish site" dabao. ~1 minute mein site par dikhega.
+
+CUSTOMER KA FLOW
+Product > Add to cart > Checkout (naam, mobile, poora address, PIN, state) > UPI QR (exact amount) > customer UPI reference (UTR) daalta hai > order page par status dekhta hai.
+Delivery Rs 80 har order par ek baar judti hai (har item par nahi).
+
+ROZ KA KAAM: ORDERS
+- /admin > Orders > "Verify payment": apne bank/UPI app mein amount aur UPI reference match karo > "Payment received".
+- "Copy address" dabao, wahi item Meesho par customer ke address par order karo.
+- Courier mil jaye to "Mark shipped" (tracking daalo), phir "Mark delivered". Customer ko har badlav turant dikhta hai. Orders ke liye Publish site nahi chahiye.
+- Agar amount items se match nahi karta to laal warning dikhti hai: us order ko confirm mat karo.
+
+DHYAN RAKHNE WALI BAATEN
+- Payment ka confirmation haath se hota hai (UPI mein bina payment gateway ke auto-confirm nahi hota). Auto-confirm chahiye to Razorpay jodna padega.
+- Order ka link (20 akshar ka random id) jiske paas hai wo wo order dekh sakta hai. Isliye customer ko link kisi ko dene ko mat bolo.
+- Photos Firestore mein chhoti karke save hoti hain (max 5 per product).
